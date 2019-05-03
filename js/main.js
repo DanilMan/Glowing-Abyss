@@ -8,11 +8,16 @@
 
 // define globals
 var game;
+var player;
+var speed;
+var acceleration;
+var aura;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {
 	// define game
 	game = new Phaser.Game(800, 800, Phaser.AUTO, 'myGame');
+	console.log('main.js');
 	
 	// define states
 	game.state.add('Load', Load);

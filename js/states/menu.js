@@ -3,6 +3,7 @@
 var Menu = function(game) {};
 Menu.prototype = {
 	create: function() {
+		console.log('Menu: create');
 		// add Menu screen text
 		var titleText = game.add.text(game.width/2, game.height/2, 'Glowing Abyss', {font: 'Helvetica', fontSize: '48px', fill: '#fff'});
 		titleText.anchor.set(0.5);
