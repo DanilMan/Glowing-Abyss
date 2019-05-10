@@ -9,9 +9,11 @@
 // define globals
 var game;
 var player;
+var cursor;
 var speed;
-var acceleration;
+var damping;
 var aura;
+var auraTimer;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {
