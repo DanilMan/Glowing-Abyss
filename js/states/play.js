@@ -8,6 +8,8 @@ Play.prototype = {
 		damping = 0.8;
 		aura = 10
 		auraTimer = 0;
+		this.fxEat = game.add.audio('eat');
+
 
 		// load background colorfirst
 		game.stage.backgroundColor = '#072656';
@@ -48,7 +50,7 @@ Play.prototype = {
 		// add aura
 		aura = game.add.sprite(player.x, player.y, 'aura')
 		aura.anchor.set(0.5);
-		aura.scale.set(2.4);
+		aura.scale.set(3.4);
 
 		game.camera.onFadeComplete.add(this.end, this);
 
@@ -64,10 +66,10 @@ Play.prototype = {
 
 		// checks to see if it is time to shrink aura
 		if(game.time.now > auraTimer && aura.scale.x > 1){
-			aura.scale.x -= .01;
-			aura.scale.y -= .01;
+			aura.scale.x -= .02;
+			aura.scale.y -= .02;
 
-			auraTimer = game.time.now + 500;
+			auraTimer = game.time.now + 100;
 		}
 
 		// Endgame for scale being < 1
@@ -88,24 +90,29 @@ Play.prototype = {
 		// populate 10 shrimp
 		var shrimp;
 		for(var i = 0; i < 100; i++){
-			shrimp = new Shrimp(game, 'shrimp', '');
+			if(i == 0){
+				shrimp = new Shrimp(game, player.x, player.y - 70, 'shrimp', '');
+			}
+			else{
+				shrimp = new Shrimp(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'shrimp', '');
+			}
 			game.add.existing(shrimp);
-
 			// shrimp uses shrimpCollisionGroup
 			shrimp.body.setCollisionGroup(shrimpGroup);
 
 			// Shrimp collide against themselves and player
 			shrimp.body.collides([shrimpGroup, playerGroup]);
 		}
+
 	},
 	collectShrimp: function(player, shrimp){
-		// respawn shrimp
-		shrimp.reset(game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9));
-
 		// increases scale of aura
 		if(aura.scale.x < 10){
-			aura.scale.x += .4;
-			aura.scale.y += .4;
+			// respawn shrimp
+			shrimp.reset(game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9));
+			this.fxEat.play();
+			aura.scale.x += .45;
+			aura.scale.y += .45;
 		}
 	},
 	render: function(){

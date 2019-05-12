@@ -1,8 +1,8 @@
 // Shrimp prefab
 
-var Shrimp = function(game, key, frame) {
+var Shrimp = function(game, x, y, key, frame) {
 	// new Sprite(game, x, y, key, frame)
-	Phaser.Sprite.call(this, game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), key, frame);
+	Phaser.Sprite.call(this, game, x, y, key, frame);
 	game.physics.p2.enable(this);
 	this.body.damping = damping;
 };

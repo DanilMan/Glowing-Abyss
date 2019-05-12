@@ -8,6 +8,8 @@ var Player = function(game, speed, aura, key, frame) {
 	this.body.damping = damping;
 	this.aura = aura;
 	this.speed = speed;
+	this.fx = game.add.audio('move');
+	this.fxTimer = 0;
 };
 
 // inherit prototype from Phaser.Sprite and set constructor to Player
@@ -36,16 +38,23 @@ Player.prototype.update = function() {
 
 	// P2 logic for angular movement
 	if(cursor.left.isDown){
-		this.body.rotateLeft(70);
+		this.body.rotateLeft(75);
 	}
 	else if(cursor.right.isDown){
-		this.body.rotateRight(70);
+		this.body.rotateRight(75);
 	}
 	else{
 		this.body.setZeroRotation();
 	}
 	if(cursor.up.isDown){
 		this.body.thrust(this.speed);
+		if(game.time.now > this.fxTimer){
+			this.fx.play();
+			this.fxTimer = game.time.now + 350;
+		}
+		//if(this.fx.isPlaying == false){
+		//	this.fx.play();
+		//}
 	}
 
 	// ARCADE logic to check if player is touching objects and adds drag
