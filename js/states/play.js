@@ -65,7 +65,7 @@ Play.prototype = {
 		aura.position.set(player.x,player.y);
 
 		// checks to see if it is time to shrink aura
-		if(game.time.now > auraTimer && aura.scale.x > 1){
+		if(game.time.now > auraTimer && aura.scale.x > 1.25){
 			aura.scale.x -= .02;
 			aura.scale.y -= .02;
 
@@ -73,7 +73,7 @@ Play.prototype = {
 		}
 
 		// Endgame for scale being < 1
-		if(aura.scale.x <= 1.2){
+		if(aura.scale.x <= 1.25){
 			this.fade();
 		}
 
@@ -90,6 +90,7 @@ Play.prototype = {
 		// populate 10 shrimp
 		var shrimp;
 		for(var i = 0; i < 100; i++){
+			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
 				shrimp = new Shrimp(game, player.x, player.y - 70, 'shrimp', '');
 			}
