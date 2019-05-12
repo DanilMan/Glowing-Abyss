@@ -50,7 +50,7 @@ Play.prototype = {
 		// add aura
 		aura = game.add.sprite(player.x, player.y, 'aura')
 		aura.anchor.set(0.5);
-		aura.scale.set(3.4);
+		aura.scale.set(4);
 
 		game.camera.onFadeComplete.add(this.end, this);
 
@@ -112,8 +112,8 @@ Play.prototype = {
 			// respawn shrimp
 			shrimp.reset(game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9));
 			this.fxEat.play();
-			aura.scale.x += .45;
-			aura.scale.y += .45;
+			aura.scale.x += 0.6;
+			aura.scale.y += 0.6;
 		}
 	},
 	render: function(){

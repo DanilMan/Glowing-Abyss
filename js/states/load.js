@@ -9,7 +9,7 @@ Load.prototype = {
 		game.load.image('background', 'background.png');
 		game.load.image('player', 'fishPlayer-39x22.png');
 		game.load.image('shrimp', 'shrimp1-18x17.png');
-		game.load.image('aura', 'aura2.png');
+		game.load.image('aura', 'aura3.png');
 
 		// load audio assets
 		game.load.path = 'assets/audio/';
