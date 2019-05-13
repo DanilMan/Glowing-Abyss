@@ -1,4 +1,5 @@
-// Daniel Ruderman
+// We Hate Mornings
+// Daniel Ruderman, Jason Yang, Kelly Huang
 // Glowing Abyss
 // A fish trying to survive in darkness
 // Updated 5/2/2019

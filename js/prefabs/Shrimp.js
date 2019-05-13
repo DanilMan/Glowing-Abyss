@@ -1,3 +1,6 @@
+// We Hate Mornings
+// Daniel Ruderman, Jason Yang, Kelly Huang
+// Glowing Abyss
 // Shrimp prefab
 
 var Shrimp = function(game, x, y, key, frame) {

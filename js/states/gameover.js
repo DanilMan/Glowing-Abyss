@@ -1,3 +1,6 @@
+// We Hate Mornings
+// Daniel Ruderman, Jason Yang, Kelly Huang
+// Glowing Abyss
 // Game Over state
 
 var GameOver = function(game) {};
