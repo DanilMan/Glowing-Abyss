@@ -10,16 +10,20 @@
 // define globals
 var game;
 var player;
+var spit;
+var enemy;
+var enemySpeed
 var cursor;
 var speed;
 var damping;
 var aura;
 var auraTimer;
+var spitTimer;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {
 	// define game
-	game = new Phaser.Game(800, 800, Phaser.AUTO, 'myGame');
+	game = new Phaser.Game(480, 480, Phaser.AUTO, 'myGame');
 	console.log('main.js');
 	
 	// define states

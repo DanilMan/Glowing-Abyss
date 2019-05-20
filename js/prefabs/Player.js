@@ -4,12 +4,12 @@
 // Player prefab
 
 // create Player constructor
-var Player = function(game, speed, aura, key, frame) {
+var Player = function(game, speed, key, frame) {
 	// new Sprite(game, x, y, key, frame)
 	Phaser.Sprite.call(this, game, game.world.width/2, game.world.height/2, key, frame);
 	game.physics.p2.enable(this);
 	this.body.damping = damping;
-	this.aura = aura;
+
 	this.speed = speed;
 	this.fx = game.add.audio('move');
 	this.fxTimer = 0;
