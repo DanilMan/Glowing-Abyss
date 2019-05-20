@@ -15,10 +15,12 @@ Load.prototype = {
 		game.load.image('enemy', 'Enemy.png');
 		game.load.image('spit', 'spit.png');
 		game.load.image('aura', 'Aura-3.png');
+		game.load.image('rock', 'SquareRock1.png');
 
 		// load audio assets
 		game.load.path = 'assets/audio/';
 		game.load.audio('move', 'fish move 3.mp3');
+		game.load.audio('move2', 'fish move 4.mp3');
 		game.load.audio('dash', 'dash effect.mp3');
 		game.load.audio('eat', 'eat.mp3');
 	},

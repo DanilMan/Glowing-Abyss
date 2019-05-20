@@ -12,13 +12,15 @@ var game;
 var player;
 var spit;
 var enemy;
-var enemySpeed
+var enemySpeed;
 var cursor;
 var speed;
 var damping;
 var aura;
 var auraTimer;
 var spitTimer;
+var enemyTimer;
+var timer;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {

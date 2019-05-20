@@ -9,10 +9,11 @@ var Player = function(game, speed, key, frame) {
 	Phaser.Sprite.call(this, game, game.world.width/2, game.world.height/2, key, frame);
 	game.physics.p2.enable(this);
 	this.body.damping = damping;
-
 	this.speed = speed;
 	this.fx = game.add.audio('move');
+	this.fx2 = game.add.audio('move2');
 	this.fxTimer = 0;
+	this.fxCheck = 1;
 };
 
 // inherit prototype from Phaser.Sprite and set constructor to Player
@@ -52,8 +53,14 @@ Player.prototype.update = function() {
 	if(cursor.up.isDown){
 		this.body.thrust(this.speed);
 		if(game.time.now > this.fxTimer){
-			this.fx.play();
-			this.fxTimer = game.time.now + 350;
+			if(this.fxCheck%2==0) {
+				this.fx.play();
+			}
+			else{
+				this.fx2.play();
+			}
+			this.fxCheck++;
+			this.fxTimer = game.time.now + 400;
 		}
 		//if(this.fx.isPlaying == false){
 		//	this.fx.play();
