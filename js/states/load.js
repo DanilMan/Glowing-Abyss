@@ -16,6 +16,13 @@ Load.prototype = {
 		game.load.image('spit', 'spit.png');
 		game.load.image('aura', 'Aura-3.png');
 		game.load.image('rock', 'SquareRock1.png');
+		game.load.image('eggBlue', 'eggBlue.png');
+		game.load.image('eggGreen', 'eggGreen.png');
+		game.load.image('eggOrange', 'eggOrange.png');
+		game.load.image('eggPurple', 'eggPurple.png');
+		game.load.image('eggRed', 'eggRed.png');
+		game.load.image('eggYellow', 'eggYellow.png');
+		game.load.image('ping', 'ping.png');
 
 		// load audio assets
 		game.load.path = 'assets/audio/';

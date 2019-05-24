@@ -40,17 +40,24 @@ Player.prototype.update = function() {
 		this.body.moveDown(this.speed);
 	}*/
 
+	if(this.scale.x > 0 && this.body.angle > 0 && this.body.angle < 180){
+		this.scale.x *= -1;
+	}
+	if(this.scale.x < 0 && this.body.angle < 0 && this.body.angle > -180){
+		this.scale.x *= -1;
+	}
+
 	// P2 logic for angular movement
-	if(cursor.left.isDown){
+	if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
 		this.body.rotateLeft(75);
 	}
-	else if(cursor.right.isDown){
+	else if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
 		this.body.rotateRight(75);
 	}
 	else{
 		this.body.setZeroRotation();
 	}
-	if(cursor.up.isDown){
+	if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
 		this.body.thrust(this.speed);
 		if(game.time.now > this.fxTimer){
 			if(this.fxCheck%2==0) {
@@ -66,95 +73,4 @@ Player.prototype.update = function() {
 		//	this.fx.play();
 		//}
 	}
-
-	// ARCADE logic to check if player is touching objects and adds drag
-	/*if( this.body.touching.down == true || this.body.touching.up == true || 
-		this.body.touching.left == true || this.body.touching.right == true){
-		this.body.drag.x = this.drag;
-		this.body.drag.y = this.drag;
-	}
-	else{
-		this.body.drag.x = this.drag/2;
-		this.body.drag.y = this.drag/2;
-	}
- 
-	// keypress logic
-	if(game.input.keyboard.isDown(Phaser.Keyboard.UP) && game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = -this.acceleration;
-		this.body.acceleration.x = -this.acceleration;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.UP) && game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = -this.acceleration;
-		this.body.acceleration.x = this.acceleration;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.DOWN) && game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = this.acceleration;
-		this.body.acceleration.x = -this.acceleration;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.DOWN) && game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = this.acceleration;
-		this.body.acceleration.x = this.acceleration;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.UP)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = -this.acceleration;
-		this.body.acceleration.x = 0;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.DOWN)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.y = this.acceleration;
-		this.body.acceleration.x = 0;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.x = -this.acceleration;
-		this.body.acceleration.y = 0;
-	}
-	else if(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
-		// cap player's max velocity
-		this.body.maxVelocity.x = this.speed;
-		this.body.maxVelocity.y = this.speed;
-
-		// player acceleration
-		this.body.acceleration.x = this.acceleration;
-		this.body.acceleration.y = 0;
-	}
-	else{
-		// cap player's max velocity
-		this.body.acceleration.x = 0;
-		this.body.acceleration.y = 0;
-	}
-	*/
 }
