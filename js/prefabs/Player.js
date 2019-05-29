@@ -8,6 +8,8 @@ var Player = function(game, speed, key, frame) {
 	// new Sprite(game, x, y, key, frame)
 	Phaser.Sprite.call(this, game, game.world.width/2, game.world.height/2, key, frame);
 	game.physics.p2.enable(this);
+	//this.body.clearShapes();
+	//this.body.loadPolygon("physics", "Fish");
 	this.body.damping = damping;
 	this.speed = speed;
 	this.fx = game.add.audio('move');

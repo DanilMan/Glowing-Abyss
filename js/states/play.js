@@ -17,7 +17,10 @@ Play.prototype = {
 		pingTimer = 0;
 		timer = game.time.create(false);
 		this.fxEat = game.add.audio('eat');
-
+		this.fxPing = game.add.audio('ping');
+		this.fxBump = game.add.audio('bump');
+		this.fxChase = game.add.audio('chase');
+		this.fxCollect = game.add.audio('collect');
 
 		// load background colorfirst
 		game.stage.backgroundColor = '#072656';
@@ -82,7 +85,7 @@ Play.prototype = {
 		game.camera.onFadeComplete.add(this.end, this);
 
 		// player collsion with rock group
-		player.body.collides([rocksCollisionGroup]);
+		player.body.collides(rocksCollisionGroup, this.bumpRock, this);
 
 		// collision logic with shrimpCollisionGroup
 		player.body.collides(shrimpCollisionGroup, this.collectShrimp, this);
@@ -126,6 +129,8 @@ Play.prototype = {
 		if((game.input.keyboard.justPressed(Phaser.Keyboard.SHIFT)) && game.time.now > pingTimer){
 			// change group alpha
 			pings.alpha = 1;
+			//play ping sound
+			this.fxPing.play();
 			// ping cooldown
 			pingTimer = game.time.now + 5000;
 		}
@@ -167,7 +172,7 @@ Play.prototype = {
 	addShrimp: function(playerGroup, shrimpGroup, rocksGroup) {
 		// populate 10 shrimp
 		var shrimp;
-		for(var i = 0; i < 200; i++){
+		for(var i = 0; i < 500; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
 				shrimp = new Shrimp(game, player.x, player.y - 50, 'shrimp', '');
@@ -220,6 +225,9 @@ Play.prototype = {
 			rock.body.collides([playerGroup, shrimpGroup, EnemyGroup, rocksGroup]);
 		}
 		//return rocks;
+	},
+	bumpRock: function(player, rock) {
+		this.fxBump.play();
 	},
 	addEggs: function(playerGroup, shrimpGroup, rocksGroup, eggsGroup) {
 		var eggs = game.add.group();
@@ -274,8 +282,9 @@ Play.prototype = {
 		enemySpeed = -10;
 	},
 	collectEgg: function(player, egg){
+		this.fxCollect.play();
 		egg.sprite.kill();
-		egg.sprite.alive = false;  // EVENTUALLY MAKE A NEW FUNCTION THAT SETS PING
+		egg.sprite.alive = false;
 	},
 	resetSpeed: function(){
 		// reset speed
@@ -309,7 +318,7 @@ Play.prototype = {
 		}
 	},
 	checkDistance: function(obj1, obj2){
-		var check = Math.sqrt(Math.pow((obj2.x - obj1.x), 2) + Math.pow((obj2.y - obj1.y), 2));
+		var check = Math.sqrt(Math.pow((obj2.x - obj1[0]), 2) + Math.pow((obj2.y - obj1[1]), 2));
 		if(check < aura.width/44){
 			return true;
 		}
@@ -318,14 +327,15 @@ Play.prototype = {
 		}
 	},
 	enemyMovement: function(enemy, player, spit, enemySpeed){
-		if(spit.alive && this.checkDistance(enemy, spit)){
+		var enemyR = this.rotation(enemy.x, enemy.y, enemy.x , enemy.y - 90, enemy.angle);
+		if(spit.alive && this.checkDistance(enemyR, spit)){
 			// makes sure that if enemy is already on spit that it stops
 			if(!this.checkOverlap(enemy, spit)){
 				this.accelerateToObject(enemy, spit, enemySpeed);
 			}
 		}
 		// enemy chases after player
-		else if(this.checkDistance(enemy, player)){
+		else if(this.checkDistance(enemyR, player)){
 				this.accelerateToObject(enemy, player, enemySpeed);
 		}
 		// possible random movement for enemy
@@ -334,17 +344,44 @@ Play.prototype = {
 				// input random movement with timer
 			}*/
 		}
+
+		// plays chase sound
+		if(this.checkDistance(enemyR, player) && this.fxChase.isPlaying == false){
+			this.fxChase.play();
+		}
+
+		// resets orientation of enemy
+		if(enemy.scale.x > 0 && enemy.body.angle > 0 && enemy.body.angle < 180){
+			enemy.scale.x *= -1;
+		}
+		if(enemy.scale.x < 0 && enemy.body.angle < 0 && enemy.body.angle > -180){
+			enemy.scale.x *= -1;
+		}
 	},
 	// accelerateToObject found here: https://phaser.io/examples/v2/p2-physics/accelerate-to-object
 	accelerateToObject: function(obj1, obj2, speed){
 		var angle = Math.atan2(obj2.y - obj1.y, obj2.x - obj1.x);
 
 		// correct angle of enemy
-		obj1.body.rotation = angle + game.math.degToRad(90);
+		var angleTo = Phaser.Math.radToDeg(angle);
+		if(obj1.angle - 89 < angleTo || obj1.angle - 91 > angleTo){
+			this.angleTo(obj1, angleTo);
+		}
+		else{
+			obj1.body.rotation = angle + game.math.degToRad(90);
+		}
 
 		// accelerate to object
 		obj1.body.force.x = Math.cos(angle) * speed;
 		obj1.body.force.y = Math.sin(angle) * speed;
+	},
+	angleTo: function(obj, angle){
+		if(obj.angle - 89 < angle){
+			obj.body.angle += 1;
+		}
+		else if(obj.angle - 91 > angle){
+			obj.body.angle -= 1;
+		}
 	},
 	// random movement logic
 	moveEnemy: function(obj, speed, X, Y){
@@ -354,8 +391,18 @@ Play.prototype = {
 		obj.body.rotation = angle + game.math.degToRad(90);
 
 		// accelerate to object
-		obj.body.force.x = Math.cos(angle) * speed;
+		obj.body.force.x = Math.cos(angle) * swapeed;
 		obj.body.force.y = Math.sin(angle) * speed;
+	},
+	// found here: https://stackoverflow.com/questions/17410809/how-to-calculate-rotation-in-2d-in-javascript
+	rotation: function(cx, cy, x, y, angle){
+			angle = ((angle + 360) % 360);
+		var radians = game.math.degToRad(angle),
+			cos = Math.cos(radians),
+			sin = Math.sin(radians),
+			nx = (cos * (x - cx)) - (sin * (y - cy)) + cx,
+			ny = (cos * (y - cy)) + (sin * (x - cx)) + cy;
+		return [nx, ny];
 	},
 	emitSpit: function(player, emit){
 		// emit from here: https://phaser.io/examples/v2/particles/click-burst
@@ -373,7 +420,7 @@ Play.prototype = {
 		return Phaser.Rectangle.intersects(boundA, boundB);
 	},
 	render: function(){
-		game.debug.physicsGroup(eggs);
+		//game.debug.spriteInfo(player, 32, 32);
 		//game.debug.cameraInfo(game.camera, 32, 32);
 	}
 };

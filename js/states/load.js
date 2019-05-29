@@ -23,6 +23,9 @@ Load.prototype = {
 		game.load.image('eggRed', 'eggRed.png');
 		game.load.image('eggYellow', 'eggYellow.png');
 		game.load.image('ping', 'ping.png');
+		game.load.image('ShiftKey', 'ShiftKey.png');
+		game.load.image('SpacebarKey', 'SpacebarKey.png');
+		game.load.image('WADKeys', 'WADKeys.png');
 
 		// load audio assets
 		game.load.path = 'assets/audio/';
@@ -30,6 +33,15 @@ Load.prototype = {
 		game.load.audio('move2', 'fish move 4.mp3');
 		game.load.audio('dash', 'dash effect.mp3');
 		game.load.audio('eat', 'eat.mp3');
+		game.load.audio('bump', 'bump.mp3');
+		game.load.audio('ping', 'ping.mp3');
+		game.load.audio('chase', 'chase.mp3');
+		game.load.audio('collect', 'collect.mp3');
+
+		// load json assets
+		game.load.path = 'assets/json/';
+		game.load.physics("physics", "Enemy.json");
+		game.load.physics("physics", "Fish.json");
 	},
 	create: function() {
 		console.log('Load: create');
