@@ -138,7 +138,7 @@ Play.prototype = {
 			//play ping sound
 			this.fxPing.play();
 			// ping cooldown
-			pingTimer = game.time.now + 5000;
+			pingTimer = game.time.now + 8000;
 		}
 		if(game.time.now == pingTimer){
 			pings.alpha = 0;
@@ -146,7 +146,7 @@ Play.prototype = {
 
 		if(game.time.now < pingTimer){
 			// ping logic
-			this.pingLogic(eggs, player, pings, aura);
+			this.pingLogic(eggs, enemy, player, pings, aura);
 		}
 		if(game.time.now < pingTimer && game.time.now > pingTimer - 4000){
 			// decrease opacity movement logic
@@ -213,7 +213,7 @@ Play.prototype = {
 		// populate enemies
 		var enemy = game.add.group();
 		var enemies;
-		for(var i = 0; i < 20; i++){
+		for(var i = 0; i < 15; i++){
 			enemies = new Enemy(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'enemy', '');
 			game.add.existing(enemies);
 
@@ -271,7 +271,7 @@ Play.prototype = {
 	addPings: function() {
 		var pings = game.add.group();
 		var ping;
-		for(var i = 0; i < 6; i++){
+		for(var i = 0; i < 21; i++){
 			// create ping sprite
 			ping = game.add.sprite(0, 0, 'ping', 0);
 			ping.animations.add('pointing', [0, 1, 2, 3, 4, 5, 6, 7, 8]);
@@ -314,7 +314,7 @@ Play.prototype = {
 		enemySpeed = 160;
 	},
 	// enemy movement logic
-	pingLogic: function(eggs, player, pings, aura){
+	pingLogic: function(eggs, enemies, player, pings, aura){
 		var length = 1200;
 		// create ping sprite
 		for(var i = 0; i < 6; i++){
@@ -335,6 +335,32 @@ Play.prototype = {
 
 				// calculate angle of player to egg
 				var angle = Phaser.Math.angleBetween(player.x, player.y, egg.x, egg.y);
+
+				// correct angle of enemy
+				ping.angle = Phaser.Math.radToDeg(angle) + 180;
+			}
+			else{
+				ping.visible = false;
+			}
+		}
+		for(var i = 6; i < 21; i++){
+			// get both sprites in group
+			var enemy = enemies.getAt(i-6);
+			var ping = pings.getAt(i);
+
+			// ping animation
+			ping.animations.play('pointing', 8, true);
+
+			// checks if enemy is alive so it'll ping
+			if(enemy.alive){
+				// check if aura is too small
+				if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
+					// resizes ping to aura
+					ping.anchor.x = (aura.width/length + 1/(aura.width/length + 1000)) + 1;
+				}
+
+				// calculate angle of player to enemy
+				var angle = Phaser.Math.angleBetween(player.x, player.y, enemy.x, enemy.y);
 
 				// correct angle of enemy
 				ping.angle = Phaser.Math.radToDeg(angle) + 180;
