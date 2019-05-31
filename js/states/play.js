@@ -11,6 +11,7 @@ Play.prototype = {
 		damping = 0.8;
 		enemySpeed = 160;
 		aura = 10
+		forward = 0;
 		auraTimer = 0;
 		spitTimer = 0;
 		enemyTimer = 0;
@@ -359,16 +360,20 @@ Play.prototype = {
 			if(!this.checkOverlap(enemy, spit)){
 				this.accelerateToObject(enemy, spit, enemySpeed);
 			}
+			//enemyTimer = game.time.now + 3000;
 		}
 		// enemy chases after player
 		else if(this.checkDistance(enemyR, player)){
-				this.accelerateToObject(enemy, player, enemySpeed);
+			this.accelerateToObject(enemy, player, enemySpeed);
+			//enemyTimer = game.time.now + 3000;
 		}
 		// possible random movement for enemy
 		else{
-			/*else{
-				// input random movement with timer
-			}*/
+			if(game.time.now > enemyTimer){
+				forward = (forward + 1) % 360;
+				enemyTimer = game.time.now + 20;
+			}
+			this.enemyRandom(enemy, forward, enemySpeed);
 		}
 
 		// plays chase sound
@@ -387,7 +392,28 @@ Play.prototype = {
 	// accelerateToObject found here: https://phaser.io/examples/v2/p2-physics/accelerate-to-object
 	accelerateToObject: function(obj1, obj2, speed){
 		var angle = Math.atan2(obj2.y - obj1.y, obj2.x - obj1.x);
+		// correct angle of enemy
+		var angleTo = Phaser.Math.radToDeg(angle);
+		var objAngle = ((obj1.angle + 630) % 360);
+		var angleCalc = (angleTo + 360) % 360;
 
+		// distance found here: https://stackoverflow.com/questions/7570808/how-do-i-calculate-the-difference-of-two-angle-measures/30887154
+		var dist = (objAngle - angleCalc + 360) % 360;
+		var distance = dist;
+		if(dist > 180){distance = 360 - dist;}
+		if(distance > 2){
+			this.angleTo(obj1, dist);
+		}
+		else{
+			obj1.body.rotation = angle + game.math.degToRad(90);
+		}
+
+		// accelerate to object
+		obj1.body.force.x = Math.cos(angle) * speed;
+		obj1.body.force.y = Math.sin(angle) * speed;
+	},
+	enemyRandom: function(obj1, obj2, speed){
+		var angle =  game.math.degToRad(obj2);
 		// correct angle of enemy
 		var angleTo = Phaser.Math.radToDeg(angle);
 		var objAngle = ((obj1.angle + 630) % 360);

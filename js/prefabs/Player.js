@@ -64,6 +64,7 @@ Player.prototype.update = function() {
 		if(game.time.now > this.fxTimer){
 			if(this.fxCheck%2==0) {
 				this.fx.play();
+				this.fxcheck = this.fxcheck/2;
 			}
 			else{
 				this.fx2.play();
