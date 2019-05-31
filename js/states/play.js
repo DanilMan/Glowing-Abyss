@@ -271,7 +271,7 @@ Play.prototype = {
 	addPings: function() {
 		var pings = game.add.group();
 		var ping;
-		for(var i = 0; i < 21; i++){
+		for(var i = 0; i < 22; i++){
 			// create ping sprite
 			ping = game.add.sprite(0, 0, 'ping', 0);
 			ping.animations.add('pointing', [0, 1, 2, 3, 4, 5, 6, 7, 8]);
@@ -279,6 +279,7 @@ Play.prototype = {
 			ping.anchor.set(5, 0.5);
 			pings.add(ping);
 		}
+		ping.visible = false; // Makes last ping invisible for the exit later!
 		return pings;
 	},
 	collectShrimp: function(player, shrimp){
