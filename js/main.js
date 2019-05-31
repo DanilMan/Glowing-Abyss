@@ -11,6 +11,7 @@
 var game;
 var player;
 var spit;
+var shrimp;
 var enemy;
 var aura;
 var eggs;

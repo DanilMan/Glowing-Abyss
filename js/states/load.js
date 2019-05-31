@@ -13,7 +13,6 @@ Load.prototype = {
 		game.load.image('player', 'fishPlayer-39x22.png');
 		game.load.image('shrimp', 'shrimp1-18x17.png');
 		game.load.image('enemy', 'Enemy.png');
-		game.load.image('spit', 'spit.png');
 		game.load.image('aura', 'Aura-3.png');
 		game.load.image('rock', 'SquareRock1.png');
 		game.load.image('eggBlue', 'eggBlue.png');
@@ -22,10 +21,11 @@ Load.prototype = {
 		game.load.image('eggPurple', 'eggPurple.png');
 		game.load.image('eggRed', 'eggRed.png');
 		game.load.image('eggYellow', 'eggYellow.png');
-		game.load.image('ping', 'ping.png');
 		game.load.image('ShiftKey', 'ShiftKey.png');
 		game.load.image('SpacebarKey', 'SpacebarKey.png');
 		game.load.image('WADKeys', 'WADKeys.png');
+		game.load.spritesheet('ping', 'ping.png', 25, 26, 9);
+		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
 
 		// load audio assets
 		game.load.path = 'assets/audio/';

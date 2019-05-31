@@ -23,7 +23,7 @@ Play.prototype = {
 		this.fxCollect = game.add.audio('collect');
 
 		// load background colorfirst
-		game.stage.backgroundColor = '#072656';
+		//game.stage.backgroundColor = '#072656';
 
 		// set world bounds
 		game.add.tileSprite(0, 0, 3200, 3200, 'background');
@@ -46,7 +46,9 @@ Play.prototype = {
 		game.physics.p2.updateBoundsCollisionGroup();
 
 		// spit sprite set up
-		spit = game.add.sprite(-20, -20, 'spit', '');
+		spit = game.add.sprite(-20, -20, 'spit', 0);
+		spit.animations.add('floating', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]);
+		spit.anchor.set(0.5, 1);
 		spit.kill();
 		spit.alive = false;
 
@@ -58,7 +60,7 @@ Play.prototype = {
 		player.body.setCollisionGroup(playerCollisionGroup);
 
 		// setup shrimp group
-		this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, rocksCollisionGroup);
+		shrimp = this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, rocksCollisionGroup);
 
 		// setup enemy group
 		enemy = this.addEnemy(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
@@ -114,7 +116,7 @@ Play.prototype = {
 			aura.scale.x -= .02;
 			aura.scale.y -= .02;
 
-			auraTimer = game.time.now + 200;
+			auraTimer = game.time.now + 100;
 		}
 
 		// Endgame for scale being < 1
@@ -124,6 +126,9 @@ Play.prototype = {
 
 		// enemy movement logic
 		enemy.forEach(this.enemyMovement, this, true, player, spit, enemySpeed);
+
+		// Shrimp movement logic
+		shrimp.forEach(this.shrimpMovement, this, true, player);
 
 		//check if player is pressing SHIFT && cool down is over (PING)
 		if((game.input.keyboard.justPressed(Phaser.Keyboard.SHIFT)) && game.time.now > pingTimer){
@@ -137,6 +142,7 @@ Play.prototype = {
 		if(game.time.now == pingTimer){
 			pings.alpha = 0;
 		}
+
 		if(game.time.now < pingTimer){
 			// ping logic
 			this.pingLogic(eggs, player, pings, aura);
@@ -148,8 +154,15 @@ Play.prototype = {
 
 		//check if player is pressing SPACEBAR && cool down is over (SPIT)
 		if((game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) && game.time.now > spitTimer){
-			spit.reset(player.x, player.y);
+			var rotate = this.rotation(player.x, player.y, player.x , player.y - 18, player.angle + 2);
+			spit.reset(rotate[0], rotate[1]);
+			spit.angle = player.angle;
+			spit.animations.play('floating', 8, false);
 			spit.alive = true;
+
+			// using spit shrinks aura
+			aura.scale.x -= 1;
+			aura.scale.y -= 1;
 
 			// spit cooldown
 			spitTimer = game.time.now + 8000;
@@ -171,6 +184,7 @@ Play.prototype = {
 	},
 	addShrimp: function(playerGroup, shrimpGroup, rocksGroup) {
 		// populate 10 shrimp
+		var shrimps = game.add.group();
 		var shrimp;
 		for(var i = 0; i < 500; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
@@ -182,12 +196,16 @@ Play.prototype = {
 			}
 			game.add.existing(shrimp);
 
+			// add shrimp to shrimps group
+			shrimps.add(shrimp);
+
 			// shrimp uses shrimpCollisionGroup
 			shrimp.body.setCollisionGroup(shrimpGroup);
 
 			// Shrimp collide against themselves and player
 			shrimp.body.collides([shrimpGroup, playerGroup, rocksGroup]);
 		}
+		return shrimps;
 
 	},
 	addEnemy: function(playerGroup, EnemyGroup, rocksGroup) {
@@ -254,7 +272,9 @@ Play.prototype = {
 		var ping;
 		for(var i = 0; i < 6; i++){
 			// create ping sprite
-			ping = game.add.sprite(0, 0, 'ping', '');
+			ping = game.add.sprite(0, 0, 'ping', 0);
+			ping.animations.add('pointing', [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+			ping.rotation = 90;
 			ping.anchor.set(5, 0.5);
 			pings.add(ping);
 		}
@@ -272,8 +292,10 @@ Play.prototype = {
 	},
 	collisionEnemy: function(player, enemy){
 		// shrink arua when enemy strikes
-		aura.scale.x -= 0.5;
-		aura.scale.y -= 0.5;
+		if(aura.scale.x > 1.25){
+			aura.scale.x -= 0.5;
+			aura.scale.y -= 0.5;
+		}
 
 		// set timer directions
 		timer.add(500, this.resetSpeed, this);
@@ -292,18 +314,22 @@ Play.prototype = {
 	},
 	// enemy movement logic
 	pingLogic: function(eggs, player, pings, aura){
+		var length = 1200;
 		// create ping sprite
 		for(var i = 0; i < 6; i++){
 			// get both sprites in group
 			var egg = eggs.getAt(i);
-			var ping = pings.getAt(i); 
+			var ping = pings.getAt(i);
+
+			// ping animation
+			ping.animations.play('pointing', 8, true);
 
 			// checks if egg is alive so it'll ping
 			if(egg.alive){
 				// check if aura is too small
-				if(aura.width/1250 + 1/(aura.width/1300) > 2.2){
+				if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
 					// resizes ping to aura
-					ping.anchor.x = aura.width/1250 + 1/(aura.width/1250);
+					ping.anchor.x = (aura.width/length + 1/(aura.width/length + 1000)) + 1;
 				}
 
 				// calculate angle of player to egg
@@ -364,8 +390,15 @@ Play.prototype = {
 
 		// correct angle of enemy
 		var angleTo = Phaser.Math.radToDeg(angle);
-		if(obj1.angle - 89 < angleTo || obj1.angle - 91 > angleTo){
-			this.angleTo(obj1, angleTo);
+		var objAngle = ((obj1.angle + 630) % 360);
+		var angleCalc = (angleTo + 360) % 360;
+
+		// distance found here: https://stackoverflow.com/questions/7570808/how-do-i-calculate-the-difference-of-two-angle-measures/30887154
+		var dist = (objAngle - angleCalc + 360) % 360;
+		var distance = dist;
+		if(dist > 180){distance = 360 - dist;}
+		if(distance > 2){
+			this.angleTo(obj1, dist);
 		}
 		else{
 			obj1.body.rotation = angle + game.math.degToRad(90);
@@ -375,11 +408,12 @@ Play.prototype = {
 		obj1.body.force.x = Math.cos(angle) * speed;
 		obj1.body.force.y = Math.sin(angle) * speed;
 	},
-	angleTo: function(obj, angle){
-		if(obj.angle - 89 < angle){
+	angleTo: function(obj, dist){
+		//var dist = (objAng - angle + 360) % 360;
+		if(dist > 180){
 			obj.body.angle += 1;
 		}
-		else if(obj.angle - 91 > angle){
+		else{
 			obj.body.angle -= 1;
 		}
 	},
@@ -404,13 +438,29 @@ Play.prototype = {
 			ny = (cos * (y - cy)) + (sin * (x - cx)) + cy;
 		return [nx, ny];
 	},
-	emitSpit: function(player, emit){
-		// emit from here: https://phaser.io/examples/v2/particles/click-burst
-		emit.x = player.x;
-		emit.y = player.y;
+	shrimpMovement: function(shrimp, player){
+		if(this.checkDist(shrimp, player)){
+			this.accelerateFromObject(shrimp, player, 24);
+		}
+	},
+	checkDist: function(obj1, obj2){
+		var check = Math.sqrt(Math.pow((obj2.x - obj1.x), 2) + Math.pow((obj2.y - obj1.y), 2));
+		if(check < aura.width/44){
+			return true;
+		}
+		else{
+			return false;
+		}
+	},
+	accelerateFromObject: function(obj1, obj2, speed){
+		var angle = Math.atan2(obj2.y - obj1.y, obj2.x - obj1.x);
+		angle = (angle + 180) % 360;
 
-		// start(explode, ms lifespan, ignored when using bust/explode,  particles emitted)
-		emit.start(false, 2000, null, 100);
+		obj1.body.rotation = angle + game.math.degToRad(90);
+
+		// accelerate to object
+		obj1.body.force.x = Math.cos(angle) * speed;
+		obj1.body.force.y = Math.sin(angle) * speed;
 	},
 	// basic rectangle overlap here: http://examples.phaser.io/_site/view_full.html?d=sprites&f=overlap+without+physics.js&t=overlap%20without%20physics
 	checkOverlap: function(obj1, obj2){
