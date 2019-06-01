@@ -6,6 +6,8 @@
 var GameOver = function(game) {};
 GameOver.prototype = {
 	create: function() {
+		// set camera back to normal
+		game.camera.scale.set(1);
 
 		// change background color
 		game.stage.backgroundColor = '000';

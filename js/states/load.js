@@ -11,7 +11,6 @@ Load.prototype = {
 		game.load.path = 'assets/img/';
 		game.load.image('background', 'background.png');
 		game.load.image('collectBar', 'collectionBar.png');
-		game.load.image('player', 'fishPlayer-39x22.png');
 		game.load.image('shrimp', 'shrimp1-18x17.png');
 		game.load.image('enemy', 'Enemy.png');
 		game.load.image('aura', 'Aura-3.png');
@@ -27,6 +26,7 @@ Load.prototype = {
 		game.load.image('WADKeys', 'WADKeys.png');
 		game.load.spritesheet('ping', 'ping.png', 25, 26, 9);
 		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
+		game.load.spritesheet('player', 'fishPlayer-39x22.png', 30, 45, 4);
 
 		// load audio assets
 		game.load.path = 'assets/audio/';

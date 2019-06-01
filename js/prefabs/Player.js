@@ -8,6 +8,7 @@ var Player = function(game, speed, key, frame) {
 	// new Sprite(game, x, y, key, frame)
 	Phaser.Sprite.call(this, game, game.world.width/2, game.world.height/2, key, frame);
 	game.physics.p2.enable(this);
+	this.animations.add('swimming', [0, 1, 2, 3]);
 	//this.body.clearShapes();
 	//this.body.loadPolygon("physics", "Fish");
 	this.body.damping = damping;
@@ -61,6 +62,7 @@ Player.prototype.update = function() {
 	}
 	if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
 		this.body.thrust(this.speed);
+		this.animations.play('swimming', 5, true);
 		if(game.time.now > this.fxTimer){
 			if(this.fxCheck%2==0) {
 				this.fx.play();
@@ -75,5 +77,8 @@ Player.prototype.update = function() {
 		//if(this.fx.isPlaying == false){
 		//	this.fx.play();
 		//}
+	}
+	else{
+		this.animations.stop('swimming');
 	}
 }

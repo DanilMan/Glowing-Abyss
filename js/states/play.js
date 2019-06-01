@@ -54,7 +54,7 @@ Play.prototype = {
 		spit.alive = false;
 
 		// Player(game, speed, key, frame)
-		player = new Player(game, speed, 'player', '');
+		player = new Player(game, speed, 'player', 0);
 		game.add.existing(player);
 
 		// set player collision group
@@ -77,7 +77,7 @@ Play.prototype = {
 		eggs = this.addEggs(playerCollisionGroup, shrimpCollisionGroup, rocksCollisionGroup, eggsCollisionGroup);
 
 		// add aura
-		aura = game.add.sprite(player.x, player.y, 'aura')
+		aura = game.add.sprite(player.x, player.y, 'aura');
 		aura.anchor.set(0.5);
 		aura.scale.set(4.5);
 
@@ -97,17 +97,36 @@ Play.prototype = {
 		player.body.collides(enemyCollisionGroup, this.collisionEnemy, this);
 
 		// collision logic with eggCollisionGroup
-		player.body.collides(eggsCollisionGroup, this.collectEgg, this);
+		player.body.collides(eggsCollisionGroup, this.collectEgg, this, collected, eggs);
+
+		game.camera.scale.set(1.6);
+
+		// camera edits to make sure it starts where the player is
+		game.camera.x = player.x + game.camera.width*11/16;
+		game.camera.y = player.y + game.camera.width*11/16;
 
 		// setting up camera.follow(player, follow_type, x_linear_interpolation, y_linear_interpolation)
 		game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+		// create collection bar sprite
+		collectBar = game.add.sprite(player.x, player.y, 'collectBar');
+		collectBar.fixedToCamera = true;
+		collectBar.cameraOffset.setTo(game.camera.width/2, game.camera.height-20);
+		collectBar.anchor.set(0.5);
+		collectBar.alpha = 0.5;
+
+		// collected group
+		collected = this.addCollected();
 
 		// start timer
 		timer.start();
 	},
 	update: function() {
+		// reset position of collectBar to camera
+		//collectBar.position.set(game.camera.x + game.camera.width/2, game.camera.y + game.camera.height-13);
+
 		// reset position of aura to player
-		aura.position.set(player.x,player.y);
+		aura.position.set(player.x, player.y);
 
 		// reset position of pings to player
 		pings.position.set(player.x, player.y); 
@@ -187,7 +206,7 @@ Play.prototype = {
 		// populate 10 shrimp
 		var shrimps = game.add.group();
 		var shrimp;
-		for(var i = 0; i < 500; i++){
+		for(var i = 0; i < 200; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
 				shrimp = new Shrimp(game, player.x, player.y - 50, 'shrimp', '');
@@ -282,6 +301,21 @@ Play.prototype = {
 		ping.visible = false; // Makes last ping invisible for the exit later!
 		return pings;
 	},
+	// adds egg collectables to camera hud
+	addCollected: function(){
+		var collected = game.add.group();
+		var collect;
+		var eggArray = ['eggBlue', 'eggGreen', 'eggOrange', 'eggPurple', 'eggRed', 'eggYellow'];
+		for(var i = 0; i < 6; i++){
+			collect = game.add.sprite(player.x, player.y, eggArray[i]);
+			collect.fixedToCamera = true;
+			collect.cameraOffset.setTo(320 + (32 * i), game.camera.height-20);
+			collect.anchor.set(0.5);
+			collect.alpha = .25;
+			collected.add(collect);
+		}
+		return collected;
+	},
 	collectShrimp: function(player, shrimp){
 		// increases scale of aura
 		if(aura.scale.x < 12){
@@ -306,9 +340,14 @@ Play.prototype = {
 		enemySpeed = -10;
 	},
 	collectEgg: function(player, egg){
+		collectBar.alpha = 1;
 		this.fxCollect.play();
 		egg.sprite.kill();
 		egg.sprite.alive = false;
+		var index = eggs.getChildIndex(egg.sprite);
+		var collect = collected.getAt(index);
+		collect.alpha = 1;
+		collectBar.alpha = 0.5;
 	},
 	resetSpeed: function(){
 		// reset speed

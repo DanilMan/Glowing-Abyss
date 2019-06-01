@@ -13,6 +13,8 @@ var player;
 var spit;
 var shrimp;
 var enemy;
+var collectBar;
+var collected;
 var aura;
 var eggs;
 var pings;
@@ -29,7 +31,7 @@ var forward;
 // wait for browser to load before creating Phaser game
 window.onload = function() {
 	// define game
-	game = new Phaser.Game(480, 480, Phaser.AUTO, 'myGame');
+	game = new Phaser.Game(800, 800, Phaser.AUTO, 'myGame');
 	console.log('main.js');
 	
 	// define states
