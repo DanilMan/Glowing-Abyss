@@ -27,6 +27,7 @@ var enemyTimer;
 var pingTimer;
 var timer;
 var forward;
+var boolPing;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {

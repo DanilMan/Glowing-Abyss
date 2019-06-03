@@ -22,6 +22,7 @@ Play.prototype = {
 		this.fxBump = game.add.audio('bump');
 		this.fxChase = game.add.audio('chase');
 		this.fxCollect = game.add.audio('collect');
+		boolPing = true;
 
 		// load background colorfirst
 		//game.stage.backgroundColor = '#072656';
@@ -97,7 +98,7 @@ Play.prototype = {
 		player.body.collides(enemyCollisionGroup, this.collisionEnemy, this);
 
 		// collision logic with eggCollisionGroup
-		player.body.collides(eggsCollisionGroup, this.collectEgg, this, collected, eggs);
+		player.body.collides(eggsCollisionGroup, this.collectEgg, this);
 
 		game.camera.scale.set(1.6);
 
@@ -115,6 +116,33 @@ Play.prototype = {
 		collectBar.anchor.set(0.5);
 		collectBar.alpha = 0.5;
 
+		// create WAD key sprite
+		this.WAD = game.add.sprite(player.x, player.y, 'WADKeys');
+		this.WAD.fixedToCamera = true;
+		this.WAD.cameraOffset.setTo(game.camera.width/2, game.camera.height/2 - 30);
+		this.WAD.anchor.set(0.5);
+		this.WAD.scale.set(2);
+		this.WAD.alive = true;
+		this.WADbool = false;
+
+		// create shift sprite
+		this.Shift = game.add.sprite(player.x, player.y, 'ShiftKey');
+		this.Shift.fixedToCamera = true;
+		this.Shift.cameraOffset.setTo(game.camera.width/2 - 110, game.camera.height/2 + 100);
+		this.Shift.anchor.set(0.5);
+		this.Shift.scale.set(2);
+		this.Shift.alive = true;
+		this.Shiftbool = false;
+
+		// create shift sprite
+		this.SpaceBar = game.add.sprite(player.x, player.y, 'SpacebarKey');
+		this.SpaceBar.fixedToCamera = true;
+		this.SpaceBar.cameraOffset.setTo(game.camera.width/2 + 80, game.camera.height/2 + 100);
+		this.SpaceBar.anchor.set(0.5);
+		this.SpaceBar.scale.set(2);
+		this.SpaceBar.alive = true;
+		this.SpaceBarbool = false;
+
 		// collected group
 		collected = this.addCollected();
 
@@ -122,8 +150,16 @@ Play.prototype = {
 		timer.start();
 	},
 	update: function() {
-		// reset position of collectBar to camera
-		//collectBar.position.set(game.camera.x + game.camera.width/2, game.camera.y + game.camera.height-13);
+		// create key tutorial and delete them on input
+		if((this.WAD.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.W))) || this.WADbool){
+			this.WADbool = this.eraseTutorial(this.WAD, this.WADbool);
+		}
+		if((this.Shift.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.SHIFT))) || this.Shiftbool){
+			this.Shiftbool = this.eraseTutorial(this.Shift, this.Shiftbool);
+		}
+		if((this.SpaceBar.alive == true && (game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR))) || this.SpaceBarbool){
+			this.SpaceBarbool = this.eraseTutorial(this.SpaceBar, this.SpaceBarbool);
+		}
 
 		// reset position of aura to player
 		aura.position.set(player.x, player.y);
@@ -151,29 +187,34 @@ Play.prototype = {
 		shrimp.forEach(this.shrimpMovement, this, true, player);
 
 		//check if player is pressing SHIFT && cool down is over (PING)
-		if((game.input.keyboard.justPressed(Phaser.Keyboard.SHIFT)) && game.time.now > pingTimer){
+		if(game.input.keyboard.justPressed(Phaser.Keyboard.SHIFT)){
 			// change group alpha
 			pings.alpha = 1;
 			//play ping sound
 			this.fxPing.play();
-			// ping cooldown
-			pingTimer = game.time.now + 8000;
 		}
-		if(game.time.now == pingTimer){
-			pings.alpha = 0;
-		}
-
-		if(game.time.now < pingTimer){
+		if(game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)){
 			// ping logic
 			this.pingLogic(eggs, enemy, player, pings, aura);
+
+			// shrink aura
+			aura.scale.x -= .005;
+			aura.scale.y -= .005;
 		}
-		if(game.time.now < pingTimer && game.time.now > pingTimer - 4000){
-			// decrease opacity movement logic
-			pings.alpha -= 0.01;
+		else if(pings.alpha > 0){
+			// keep ping logic running
+			this.pingLogic(eggs, enemy, player, pings, aura);
+
+			// keeps shrinking aura
+			aura.scale.x -= .005;
+			aura.scale.y -= .005;
+
+			// decrease ping alpha
+			pings.alpha -= 0.02;
 		}
 
 		//check if player is pressing SPACEBAR && cool down is over (SPIT)
-		if((game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) && game.time.now > spitTimer){
+		if((game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) && game.time.now > spitTimer && aura.scale.x > 1.25){
 			var rotate = this.rotation(player.x, player.y, player.x , player.y - 18, player.angle + 2);
 			spit.reset(rotate[0], rotate[1]);
 			spit.angle = player.angle;
@@ -194,8 +235,19 @@ Play.prototype = {
 			spit.alive = false;
 		}
 	},
+	eraseTutorial: function(item, bool){
+		if(item.alpha > 0){
+			bool = true;
+			item.alpha -= 0.02;
+		}
+		else{
+			bool = false;
+			item.destroy();
+		}
+		return bool;
+	},
 	fade: function(){
-		// fades camera to black when character dies
+		// fades camera to black when character diesdw
 		game.camera.fade(0x000000, 200);
 	},
 	end: function(){
@@ -206,7 +258,7 @@ Play.prototype = {
 		// populate 10 shrimp
 		var shrimps = game.add.group();
 		var shrimp;
-		for(var i = 0; i < 200; i++){
+		for(var i = 0; i < 500; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
 				shrimp = new Shrimp(game, player.x, player.y - 50, 'shrimp', '');
@@ -340,7 +392,7 @@ Play.prototype = {
 		enemySpeed = -10;
 	},
 	collectEgg: function(player, egg){
-		collectBar.alpha = 1;
+		//collectBar.alpha = 1;
 		this.fxCollect.play();
 		egg.sprite.kill();
 		egg.sprite.alive = false;
