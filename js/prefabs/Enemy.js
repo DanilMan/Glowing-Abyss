@@ -7,6 +7,7 @@ var Enemy = function(game, x, y, key, frame) {
 	// new Sprite(game, x, y, key, frame)
 	Phaser.Sprite.call(this, game, x, y, key, frame);
 	game.physics.p2.enable(this);
+	this.animations.add('swim', [0, 1, 2, 3, 4, 5]);
 	this.body.clearShapes();
 	this.body.loadPolygon("physics", "Enemy");
 	this.body.damping = damping;

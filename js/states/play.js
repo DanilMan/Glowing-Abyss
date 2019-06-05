@@ -16,12 +16,15 @@ Play.prototype = {
 		spitTimer = 0;
 		enemyTimer = 0;
 		pingTimer = 0;
+		shrimpArray = this.create2DArray(100, 2);
+		shrimpCursor = new Array(2);
 		timer = game.time.create(false);
 		this.fxEat = game.add.audio('eat');
 		this.fxPing = game.add.audio('ping');
 		this.fxBump = game.add.audio('bump');
 		this.fxChase = game.add.audio('chase');
 		this.fxCollect = game.add.audio('collect');
+		this.fxdie = game.add.audio('die');
 		boolPing = true;
 
 		// load background colorfirst
@@ -40,6 +43,7 @@ Play.prototype = {
 		// collision groups from https://phaser.io/examples/v2/p2-physics/collision-groups
 		var playerCollisionGroup = game.physics.p2.createCollisionGroup();
 		var shrimpCollisionGroup = game.physics.p2.createCollisionGroup();
+		var shrimpArrayCollisionGroup = game.physics.p2.createCollisionGroup();
 		var enemyCollisionGroup = game.physics.p2.createCollisionGroup();
 		var rocksCollisionGroup = game.physics.p2.createCollisionGroup();
 		var eggsCollisionGroup = game.physics.p2.createCollisionGroup();
@@ -62,13 +66,16 @@ Play.prototype = {
 		player.body.setCollisionGroup(playerCollisionGroup);
 
 		// setup shrimp group
-		shrimp = this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, rocksCollisionGroup);
+		shrimp = this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup);
+
+		// setup shrimp group
+		shrimpGrid = this.addShrimpGrid(playerCollisionGroup, shrimpArrayCollisionGroup, shrimpCollisionGroup);
 
 		// setup enemy group
 		enemy = this.addEnemy(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
 
 		// setup rock
-		this.addRocks(playerCollisionGroup, shrimpCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
 
 		// setup pings
 		pings = this.addPings();
@@ -91,8 +98,9 @@ Play.prototype = {
 		// player collsion with rock group
 		player.body.collides(rocksCollisionGroup, this.bumpRock, this);
 
-		// collision logic with shrimpCollisionGroup
+		// collision logic with shrimpCollisionGroup & shrimpArrayCollisionGroup
 		player.body.collides(shrimpCollisionGroup, this.collectShrimp, this);
+		player.body.collides(shrimpArrayCollisionGroup, this.collectShrimpGrid, this);
 
 		// collision logic with enemyCollisionGroup
 		player.body.collides(enemyCollisionGroup, this.collisionEnemy, this);
@@ -117,9 +125,9 @@ Play.prototype = {
 		collectBar.alpha = 0.5;
 
 		// create WAD key sprite
-		this.WAD = game.add.sprite(player.x, player.y, 'WADKeys');
+		this.WAD = game.add.sprite(player.x, player.y, 'WASDKeys');
 		this.WAD.fixedToCamera = true;
-		this.WAD.cameraOffset.setTo(game.camera.width/2, game.camera.height/2 - 30);
+		this.WAD.cameraOffset.setTo(game.camera.width/2 + 10, game.camera.height/2 + 25);
 		this.WAD.anchor.set(0.5);
 		this.WAD.scale.set(2);
 		this.WAD.alive = true;
@@ -128,7 +136,7 @@ Play.prototype = {
 		// create shift sprite
 		this.Shift = game.add.sprite(player.x, player.y, 'ShiftKey');
 		this.Shift.fixedToCamera = true;
-		this.Shift.cameraOffset.setTo(game.camera.width/2 - 110, game.camera.height/2 + 100);
+		this.Shift.cameraOffset.setTo(game.camera.width/2 - 140, game.camera.height/2 + 100);
 		this.Shift.anchor.set(0.5);
 		this.Shift.scale.set(2);
 		this.Shift.alive = true;
@@ -137,7 +145,7 @@ Play.prototype = {
 		// create shift sprite
 		this.SpaceBar = game.add.sprite(player.x, player.y, 'SpacebarKey');
 		this.SpaceBar.fixedToCamera = true;
-		this.SpaceBar.cameraOffset.setTo(game.camera.width/2 + 80, game.camera.height/2 + 100);
+		this.SpaceBar.cameraOffset.setTo(game.camera.width/2 + 180, game.camera.height/2 + 100);
 		this.SpaceBar.anchor.set(0.5);
 		this.SpaceBar.scale.set(2);
 		this.SpaceBar.alive = true;
@@ -168,16 +176,17 @@ Play.prototype = {
 		pings.position.set(player.x, player.y); 
 
 		// checks to see if it is time to shrink aura
-		if(game.time.now > auraTimer && aura.scale.x > 1.25){
+		/*if(game.time.now > auraTimer && aura.scale.x > 1.25){ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			aura.scale.x -= .02;
 			aura.scale.y -= .02;
 
 			auraTimer = game.time.now + 100;
-		}
+		}*/
 
 		// Endgame for scale being < 1
 		if(aura.scale.x <= 1.25){
 			this.fade();
+			this.fxdie.play();
 		}
 
 		// enemy movement logic
@@ -185,29 +194,35 @@ Play.prototype = {
 
 		// Shrimp movement logic
 		shrimp.forEach(this.shrimpMovement, this, true, player);
+		shrimpGrid.forEach(this.shrimpGridMovement, this, true, player);
 
 		//check if player is pressing SHIFT && cool down is over (PING)
 		if(game.input.keyboard.justPressed(Phaser.Keyboard.SHIFT)){
-			// change group alpha
+			// ping alpha
 			pings.alpha = 1;
 			//play ping sound
 			this.fxPing.play();
 		}
 		if(game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)){
 			// ping logic
-			this.pingLogic(eggs, enemy, player, pings, aura);
+			this.pingLogic(eggs, enemy, player, pings, aura, true);
 
 			// shrink aura
-			aura.scale.x -= .005;
-			aura.scale.y -= .005;
+			if(this.Shift.alive == false){
+				aura.scale.x -= .005;
+				aura.scale.y -= .005;
+			}
+			
 		}
-		else if(pings.alpha > 0){
+		else if(pings.alpha > 0.0){
 			// keep ping logic running
-			this.pingLogic(eggs, enemy, player, pings, aura);
+			this.pingLogic(eggs, enemy, player, pings, aura, false);
 
 			// keeps shrinking aura
-			aura.scale.x -= .005;
-			aura.scale.y -= .005;
+			if(this.Shift.alive == false){
+				aura.scale.x -= .005;
+				aura.scale.y -= .005;
+			}
 
 			// decrease ping alpha
 			pings.alpha -= 0.02;
@@ -222,8 +237,11 @@ Play.prototype = {
 			spit.alive = true;
 
 			// using spit shrinks aura
-			aura.scale.x -= 1;
-			aura.scale.y -= 1;
+			if(this.SpaceBar.alive == false){
+				aura.scale.x -= (aura.width/2000);
+				aura.scale.y -= (aura.height/2000);
+			}
+			
 
 			// spit cooldown
 			spitTimer = game.time.now + 8000;
@@ -254,11 +272,11 @@ Play.prototype = {
 		// go to GameOver state
 		game.state.start('GameOver');
 	},
-	addShrimp: function(playerGroup, shrimpGroup, rocksGroup) {
-		// populate 10 shrimp
+	addShrimp: function(playerGroup, shrimpGroup, shrimpArrayGroup) {
+		// populate shrimp
 		var shrimps = game.add.group();
 		var shrimp;
-		for(var i = 0; i < 500; i++){
+		for(var i = 0; i < 100; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
 				shrimp = new Shrimp(game, player.x, player.y - 50, 'shrimp', '');
@@ -275,17 +293,60 @@ Play.prototype = {
 			shrimp.body.setCollisionGroup(shrimpGroup);
 
 			// Shrimp collide against themselves and player
-			shrimp.body.collides([shrimpGroup, playerGroup, rocksGroup]);
+			shrimp.body.collides([shrimpGroup, playerGroup, shrimpArrayGroup]);
 		}
+		// return shrimp group
 		return shrimps;
 
+	},
+	addShrimpGrid: function(playerGroup, shrimpArrayGroup, shrimpGroup) {
+		// populate shrimp grid
+		var shrimps = game.add.group();
+		var shrimp;
+		var counter = 0;
+		for(var i = 0; i < 16; i++){
+			for(var j = 0; j < 16; j++){
+				// set shrimp on grid
+				shrimp = new Shrimp(game, ((j * 200)), ((i * 200)), 'shrimp', '');
+
+				game.add.existing(shrimp);
+
+				// add shrimp to shrimps group
+				shrimps.add(shrimp);
+
+				// shrimp uses shrimpCollisionGroup
+				shrimp.body.setCollisionGroup(shrimpArrayGroup);
+
+				// Shrimp collide against themselves and player
+				shrimp.body.collides([shrimpArrayGroup, playerGroup, shrimpGroup]);
+
+				if(counter == 136){
+					shrimp.reset(-10,-10);
+				}
+				
+
+				// save position in shrimpArray
+				var array = new Array(2);
+				array[0] = j * 200;
+				array[1] = i * 200;
+				shrimpArray[counter] = array;
+				counter++;
+			}
+		}
+		// save empty position on cursor array
+		var array = shrimpArray[136];
+		shrimpCursor[0] = array[0];
+		shrimpCursor[1] = array[1];
+
+		// return shrimp group
+		return shrimps;
 	},
 	addEnemy: function(playerGroup, EnemyGroup, rocksGroup) {
 		// populate enemies
 		var enemy = game.add.group();
 		var enemies;
-		for(var i = 0; i < 15; i++){
-			enemies = new Enemy(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'enemy', '');
+		for(var i = 0; i < 15; i++){ //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			enemies = new Enemy(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'enemy', 0);
 			game.add.existing(enemies);
 
 			// add enemies to enemy group
@@ -299,7 +360,7 @@ Play.prototype = {
 		}
 		return enemy;
 	},
-	addRocks: function(playerGroup, shrimpGroup, EnemyGroup, rocksGroup) {
+	addRocks: function(playerGroup, EnemyGroup, rocksGroup) {
 		// populate rocks
 		//var rocks = game.add.group();
 		var rock;
@@ -312,7 +373,7 @@ Play.prototype = {
 			rock.body.setCollisionGroup(rocksGroup);
 
 			// enemies collide against themselves and player
-			rock.body.collides([playerGroup, shrimpGroup, EnemyGroup, rocksGroup]);
+			rock.body.collides([playerGroup, EnemyGroup, rocksGroup]);
 		}
 		//return rocks;
 	},
@@ -344,10 +405,10 @@ Play.prototype = {
 		var ping;
 		for(var i = 0; i < 22; i++){
 			// create ping sprite
-			ping = game.add.sprite(0, 0, 'ping', 0);
-			ping.animations.add('pointing', [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+			ping = game.add.sprite(0, 0, 'ping', '');
 			ping.rotation = 90;
 			ping.anchor.set(5, 0.5);
+			ping.scale.set(1.2);
 			pings.add(ping);
 		}
 		ping.visible = false; // Makes last ping invisible for the exit later!
@@ -369,14 +430,59 @@ Play.prototype = {
 		return collected;
 	},
 	collectShrimp: function(player, shrimp){
-		// increases scale of aura
-		if(aura.scale.x < 12){
+		
+		if(aura.scale.x < 12 && shrimp.sprite.alive){
+			// play shrimp collection sound
+			this.fxEat.play();
+
 			// respawn shrimp
 			shrimp.reset(game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9));
-			this.fxEat.play();
+
+			// make shrimp invisible and dead
+			shrimp.sprite.visible = false;
+			shrimp.sprite.alive = false;
+
+			// increases scale of aura
 			aura.scale.x += 1;
 			aura.scale.y += 1;
 		}
+	},
+	collectShrimpGrid: function(player, shrimp){
+		if(aura.scale.x < 12 && shrimp.sprite.alive){
+			// turn off collision
+			shrimp.sprite.body.enable = false;
+
+			// play shrimp collection sound
+			this.fxEat.play();
+
+			// move to next place on grid.
+			this.shrimpGridFix(player, shrimp);
+			
+			// increases scale of aura
+			aura.scale.x += 1;
+			aura.scale.y += 1;
+		}
+	},
+	shrimpGridFix: function(player, shrimp){
+		// respawn shrimp to empty position
+		shrimp.reset(shrimpCursor[0], shrimpCursor[1]);
+
+		shrimp.sprite.visible = false;
+		shrimp.sprite.alive = false;
+
+		// get original position of shrimp
+		var index = shrimpGrid.getChildIndex(shrimp.sprite);
+		var vector = shrimpArray[index];
+
+		// change shrimps position on position array
+		var reset = new Array(2);
+		reset[0] = shrimpCursor[0];
+		reset[1] = shrimpCursor[1];
+		shrimpArray[index] = reset;
+
+		// save original position of shrimp as empty position
+		shrimpCursor[0] = vector[0];
+		shrimpCursor[1] = vector[1];
 	},
 	collisionEnemy: function(player, enemy){
 		// shrink arua when enemy strikes
@@ -406,19 +512,21 @@ Play.prototype = {
 		enemySpeed = 160;
 	},
 	// enemy movement logic
-	pingLogic: function(eggs, enemies, player, pings, aura){
-		var length = 1200;
+	pingLogic: function(eggs, enemies, player, pings, aura, bool){
+		var length = 210; // 1200
 		// create ping sprite
 		for(var i = 0; i < 6; i++){
 			// get both sprites in group
 			var egg = eggs.getAt(i);
 			var ping = pings.getAt(i);
 
-			// ping animation
-			ping.animations.play('pointing', 8, true);
-
 			// checks if egg is alive so it'll ping
 			if(egg.alive){
+				if(bool){
+					// change ping alpha
+					this.pingAlpha(player, ping, egg);
+				}
+
 				// check if aura is too small
 				if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
 					// resizes ping to aura
@@ -440,11 +548,13 @@ Play.prototype = {
 			var enemy = enemies.getAt(i-6);
 			var ping = pings.getAt(i);
 
-			// ping animation
-			ping.animations.play('pointing', 8, true);
-
 			// checks if enemy is alive so it'll ping
 			if(enemy.alive){
+				if(bool){
+					// change ping alpha
+					this.pingAlpha(player, ping, enemy);
+				}
+
 				// check if aura is too small
 				if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
 					// resizes ping to aura
@@ -462,6 +572,20 @@ Play.prototype = {
 			}
 		}
 	},
+	pingAlpha: function(player, ping, obj){
+		var distance = this.distanceFrom(player, obj);
+		//console.log(1/(distance*0.005));
+		ping.alpha = 1/(distance*0.002);
+		if(ping.alpha > 0.99){
+			ping.alpha = 1;
+		}
+		if(ping.alpha < 0.19){
+			ping.alpha = 0.18;
+		}
+	},
+	distanceFrom: function(obj1, obj2){
+		return Math.sqrt(Math.pow((obj2.x - obj1.x), 2) + Math.pow((obj2.y - obj1.y), 2));
+	},
 	checkDistance: function(obj1, obj2){
 		var check = Math.sqrt(Math.pow((obj2.x - obj1[0]), 2) + Math.pow((obj2.y - obj1[1]), 2));
 		if(check < aura.width/44){
@@ -472,18 +596,19 @@ Play.prototype = {
 		}
 	},
 	enemyMovement: function(enemy, player, spit, enemySpeed){
+		// move when more animations are implemented
+		enemy.animations.play('swim', 12, true);
+
 		var enemyR = this.rotation(enemy.x, enemy.y, enemy.x , enemy.y - 90, enemy.angle);
 		if(spit.alive && this.checkDistance(enemyR, spit)){
 			// makes sure that if enemy is already on spit that it stops
 			if(!this.checkOverlap(enemy, spit)){
 				this.accelerateToObject(enemy, spit, enemySpeed);
 			}
-			//enemyTimer = game.time.now + 3000;
 		}
 		// enemy chases after player
 		else if(this.checkDistance(enemyR, player)){
 			this.accelerateToObject(enemy, player, enemySpeed);
-			//enemyTimer = game.time.now + 3000;
 		}
 		// possible random movement for enemy
 		else{
@@ -583,13 +708,37 @@ Play.prototype = {
 		return [nx, ny];
 	},
 	shrimpMovement: function(shrimp, player){
-		if(this.checkDist(shrimp, player)){
+		// moves shrimp away from player
+		if(this.checkDist(shrimp, player, 44)){
 			this.accelerateFromObject(shrimp, player, 24);
 		}
+
+		// makes shrimp visble while not seen by player
+		if(!shrimp.visible){
+			if(!this.checkDist(shrimp, player, 42)){
+				shrimp.visible = true;
+				shrimp.alive = true;
+			}
+		}
 	},
-	checkDist: function(obj1, obj2){
+	shrimpGridMovement: function(shrimp, player){
+		// moves shrimp away from player
+		if(this.checkDist(shrimp, player, 44)){
+			this.accelerateFromObject(shrimp, player, 24);
+		}
+
+		// makes shrimp visble while not seen by player
+		if(!shrimp.visible){
+			if(!this.checkDist(shrimp, player, 42)){
+				shrimp.visible = true;
+				shrimp.alive = true;
+				shrimp.body.enable = true;
+			}
+		}
+	},
+	checkDist: function(obj1, obj2, radius){
 		var check = Math.sqrt(Math.pow((obj2.x - obj1.x), 2) + Math.pow((obj2.y - obj1.y), 2));
-		if(check < aura.width/44){
+		if(check < aura.width/radius){
 			return true;
 		}
 		else{
@@ -612,6 +761,14 @@ Play.prototype = {
 		var boundB = obj2.getBounds();
 
 		return Phaser.Rectangle.intersects(boundA, boundB);
+	},
+	create2DArray: function(arraySize, vectorSize){
+		var arr = new Array(arraySize);
+
+		for(var i = 0; i < arr.length; i++){
+			arr[i] = new Array(vectorSize);
+		}
+		return arr;
 	},
 	render: function(){
 		//game.debug.spriteInfo(player, 32, 32);

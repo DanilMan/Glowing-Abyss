@@ -74,9 +74,21 @@ Player.prototype.update = function() {
 			this.fxCheck++;
 			this.fxTimer = game.time.now + 400;
 		}
-		//if(this.fx.isPlaying == false){
-		//	this.fx.play();
-		//}
+	}
+	else if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+		this.body.reverse(this.speed/2);
+		this.animations.play('swimming', 5, true);
+		if(game.time.now > this.fxTimer){
+			if(this.fxCheck%2==0) {
+				this.fx.play();
+				this.fxcheck = this.fxcheck/2;
+			}
+			else{
+				this.fx2.play();
+			}
+			this.fxCheck++;
+			this.fxTimer = game.time.now + 400;
+		}
 	}
 	else{
 		this.animations.stop('swimming');

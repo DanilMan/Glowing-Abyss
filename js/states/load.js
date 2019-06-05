@@ -11,7 +11,6 @@ Load.prototype = {
 		game.load.path = 'assets/img/';
 		game.load.image('background', 'WaterBackground.png');
 		game.load.image('collectBar', 'collectionBar.png');
-		game.load.image('enemy', 'Enemy.png');
 		game.load.image('aura', 'Aura-3.png');
 		game.load.image('rock', 'SquareRock1.png');
 		game.load.image('eggBlue', 'eggBlue.png');
@@ -22,8 +21,9 @@ Load.prototype = {
 		game.load.image('eggYellow', 'eggYellow.png');
 		game.load.image('ShiftKey', 'ShiftKey.png');
 		game.load.image('SpacebarKey', 'SpacebarKey.png');
-		game.load.image('WADKeys', 'WADKeys.png');
-		game.load.spritesheet('ping', 'ping.png', 25, 26, 9);
+		game.load.image('WASDKeys', 'WASDKeys.png');
+		game.load.image('ping', 'ping2.png');
+		game.load.spritesheet('enemy', 'EnemySwim.png', 84, 181, 6);
 		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
 		game.load.spritesheet('player', 'fishPlayer-39x22.png', 30, 45, 4);
 		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18.5, 19, 2);
@@ -38,6 +38,7 @@ Load.prototype = {
 		game.load.audio('ping', 'ping.mp3');
 		game.load.audio('chase', 'chase.mp3');
 		game.load.audio('collect', 'collect.mp3');
+		game.load.audio('die', 'die.mp3');
 
 		// load json assets
 		game.load.path = 'assets/json/';
