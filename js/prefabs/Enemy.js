@@ -9,7 +9,7 @@ var Enemy = function(game, x, y, key, frame) {
 	game.physics.p2.enable(this);
 	this.animations.add('swim', [0, 1, 2, 3, 4, 5]);
 	this.body.clearShapes();
-	this.body.loadPolygon("physics", "Enemy");
+	this.body.loadPolygon("physicsEnemy", "Enemy");
 	this.body.damping = damping;
 	this.body.angularDamping = damping;
 };

@@ -46,6 +46,7 @@ Play.prototype = {
 		var shrimpArrayCollisionGroup = game.physics.p2.createCollisionGroup();
 		var enemyCollisionGroup = game.physics.p2.createCollisionGroup();
 		var rocksCollisionGroup = game.physics.p2.createCollisionGroup();
+		var edgeCollisionGroup = game.physics.p2.createCollisionGroup();
 		var eggsCollisionGroup = game.physics.p2.createCollisionGroup();
 
 		// update collision with bounds
@@ -66,16 +67,55 @@ Play.prototype = {
 		player.body.setCollisionGroup(playerCollisionGroup);
 
 		// setup shrimp group
-		shrimp = this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup);
+		shrimp = this.addShrimp(playerCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, edgeCollisionGroup);
 
 		// setup shrimp group
-		shrimpGrid = this.addShrimpGrid(playerCollisionGroup, shrimpArrayCollisionGroup, shrimpCollisionGroup);
+		shrimpGrid = this.addShrimpGrid(playerCollisionGroup, shrimpArrayCollisionGroup, shrimpCollisionGroup, edgeCollisionGroup);
 
 		// setup enemy group
-		enemy = this.addEnemy(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		enemy = this.addEnemy(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
 
-		// setup rock
-		this.addRocks(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// setup rocks
+		// top left entrance
+		this.addRocks(1400, 180, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1107, 180, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1400, 464, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// left upper triangle
+		this.addRocks(805, 758, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(512, 758, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(805, 1042, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// top right entrance
+		this.addRocks(1800, 180, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(2093, 180, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1800, 464, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// top right
+		this.addRocks(2679, 180, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// right upper flat
+		this.addRocks(2093, 1032, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(2386, 1032, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// left mid r
+		this.addRocks(512, 1610, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(805, 1610, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1098, 1610, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(512, 1894, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(512, 2178, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// left bottom I
+		this.addRocks(1098, 2746, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1098, 3030, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// right lower r
+		this.addRocks(1800, 2178, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(2093, 2178, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(1800, 2462, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		// right lower flat
+		this.addRocks(2386, 2746, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+		this.addRocks(2679, 2746, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup);
+
+		// add edges
+		this.addEdge(1289, 19, -520, 0, 3, 'TopWall', playerCollisionGroup, edgeCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, enemyCollisionGroup);
+		this.addEdge(1911, 19, 520, 0, 3, 'TopWall', playerCollisionGroup, edgeCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, enemyCollisionGroup);
+		this.addEdge(20, 260, 0, 520, 7, 'LeftWall', playerCollisionGroup, edgeCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, enemyCollisionGroup);
+		this.addEdge(260, 3180, 520, 0, 7, 'BottomWall', playerCollisionGroup, edgeCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, enemyCollisionGroup);
+		this.addEdge(3181, 260, 0, 520, 7, 'RightWall', playerCollisionGroup, edgeCollisionGroup, shrimpCollisionGroup, shrimpArrayCollisionGroup, enemyCollisionGroup);
 
 		// setup pings
 		pings = this.addPings();
@@ -84,7 +124,7 @@ Play.prototype = {
 		// setup eggs
 		eggs = this.addEggs(playerCollisionGroup, shrimpCollisionGroup, rocksCollisionGroup, eggsCollisionGroup);
 
-		// add aura
+		// add auradw
 		aura = game.add.sprite(player.x, player.y, 'aura');
 		aura.anchor.set(0.5);
 		aura.scale.set(4.5);
@@ -107,6 +147,9 @@ Play.prototype = {
 
 		// collision logic with eggCollisionGroup
 		player.body.collides(eggsCollisionGroup, this.collectEgg, this);
+
+		// collision logic with edgeCollisionGroup
+		player.body.collides(edgeCollisionGroup);
 
 		game.camera.scale.set(1.6);
 
@@ -186,7 +229,6 @@ Play.prototype = {
 		// Endgame for scale being < 1
 		if(aura.scale.x <= 1.25){
 			this.fade();
-			this.fxdie.play();
 		}
 
 		// enemy movement logic
@@ -272,17 +314,17 @@ Play.prototype = {
 		// go to GameOver state
 		game.state.start('GameOver');
 	},
-	addShrimp: function(playerGroup, shrimpGroup, shrimpArrayGroup) {
+	addShrimp: function(playerGroup, shrimpGroup, shrimpArrayGroup, edgeGroup) {
 		// populate shrimp
 		var shrimps = game.add.group();
 		var shrimp;
 		for(var i = 0; i < 100; i++){
 			// makes the first shrimp appear in front of the player, and then randomizes the rest
 			if(i == 0){
-				shrimp = new Shrimp(game, player.x, player.y - 50, 'shrimp', '');
+				shrimp = new Shrimp(game, player.x, player.y + 60, 'shrimp', '');
 			}
 			else{
-				shrimp = new Shrimp(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'shrimp', '');
+				shrimp = new Shrimp(game, game.rnd.between(50, game.world.width-50), game.rnd.between(50, game.world.height-50), 'shrimp', '');
 			}
 			game.add.existing(shrimp);
 
@@ -293,13 +335,13 @@ Play.prototype = {
 			shrimp.body.setCollisionGroup(shrimpGroup);
 
 			// Shrimp collide against themselves and player
-			shrimp.body.collides([shrimpGroup, playerGroup, shrimpArrayGroup]);
+			shrimp.body.collides([shrimpGroup, playerGroup, shrimpArrayGroup, edgeGroup]);
 		}
 		// return shrimp group
 		return shrimps;
 
 	},
-	addShrimpGrid: function(playerGroup, shrimpArrayGroup, shrimpGroup) {
+	addShrimpGrid: function(playerGroup, shrimpArrayGroup, shrimpGroup, edgeGroup) {
 		// populate shrimp grid
 		var shrimps = game.add.group();
 		var shrimp;
@@ -307,7 +349,7 @@ Play.prototype = {
 		for(var i = 0; i < 16; i++){
 			for(var j = 0; j < 16; j++){
 				// set shrimp on grid
-				shrimp = new Shrimp(game, ((j * 200)), ((i * 200)), 'shrimp', '');
+				shrimp = new Shrimp(game, (100 + (j * 200)), (100 + (i * 200)), 'shrimp', '');
 
 				game.add.existing(shrimp);
 
@@ -318,17 +360,16 @@ Play.prototype = {
 				shrimp.body.setCollisionGroup(shrimpArrayGroup);
 
 				// Shrimp collide against themselves and player
-				shrimp.body.collides([shrimpArrayGroup, playerGroup, shrimpGroup]);
+				shrimp.body.collides([shrimpArrayGroup, playerGroup, shrimpGroup, edgeGroup]);
 
 				if(counter == 136){
 					shrimp.reset(-10,-10);
 				}
-				
 
 				// save position in shrimpArray
 				var array = new Array(2);
-				array[0] = j * 200;
-				array[1] = i * 200;
+				array[0] = 100 + (j * 200);
+				array[1] = 100 + (i * 200);
 				shrimpArray[counter] = array;
 				counter++;
 			}
@@ -341,11 +382,11 @@ Play.prototype = {
 		// return shrimp group
 		return shrimps;
 	},
-	addEnemy: function(playerGroup, EnemyGroup, rocksGroup) {
+	addEnemy: function(playerGroup, EnemyGroup, rocksGroup, edgeGroup) {
 		// populate enemies
 		var enemy = game.add.group();
 		var enemies;
-		for(var i = 0; i < 15; i++){ //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		for(var i = 0; i < 15; i++){ // CHANGE TO SPAWN ENEMIES AT EXACT LOCATIONS
 			enemies = new Enemy(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'enemy', 0);
 			game.add.existing(enemies);
 
@@ -356,26 +397,37 @@ Play.prototype = {
 			enemies.body.setCollisionGroup(EnemyGroup);
 
 			// enemies collide against themselves and player
-			enemies.body.collides([playerGroup, EnemyGroup, rocksGroup]);
+			enemies.body.collides([playerGroup, EnemyGroup, rocksGroup, edgeGroup]);
 		}
 		return enemy;
 	},
-	addRocks: function(playerGroup, EnemyGroup, rocksGroup) {
+	addRocks: function(x, y, playerGroup, EnemyGroup, rocksGroup) {
 		// populate rocks
-		//var rocks = game.add.group();
 		var rock;
-		for(var i = 0; i < 8; i++){
-			rock = game.add.sprite(game.rnd.between(100, game.world.width-200), game.rnd.between(100, game.world.height-200), 'rock', '');
-			game.physics.p2.enable(rock);
-			rock.body.static = true;
+		rock = game.add.sprite(x, y, 'rock', '');
+		game.physics.p2.enable(rock);
+		rock.body.static = true;
+
+		// rocks uses enemyCollisionGroup
+		rock.body.setCollisionGroup(rocksGroup);
+
+		// rocks collide against themselves and player
+		rock.body.collides([playerGroup, EnemyGroup, rocksGroup]);
+	},
+	addEdge: function(x, y, multX, multY, num, img, playerGroup, edgeGroup, shrimpGroup, shrimpArrayGroup, enemyGroup){
+		var edge;
+		for(var i = 0; i < num; i++){
+			//edge = game.add.sprite(260 + (520 * i), 20, 'TopWall', '');
+			edge = game.add.sprite(x + (multX * i), y + (multY * i), img, '');
+			game.physics.p2.enable(edge);
+			edge.body.static = true;
 
 			// enemies uses enemyCollisionGroup
-			rock.body.setCollisionGroup(rocksGroup);
+			edge.body.setCollisionGroup(edgeGroup);
 
 			// enemies collide against themselves and player
-			rock.body.collides([playerGroup, EnemyGroup, rocksGroup]);
+			edge.body.collides([playerGroup, shrimpGroup, shrimpArrayGroup, enemyGroup]);
 		}
-		//return rocks;
 	},
 	bumpRock: function(player, rock) {
 		this.fxBump.play();
@@ -384,8 +436,10 @@ Play.prototype = {
 		var eggs = game.add.group();
 		var egg;
 		var eggArray = ['eggBlue', 'eggGreen', 'eggOrange', 'eggPurple', 'eggRed', 'eggYellow'];
+		var eggPos = [[2377, 1263], [771, 3000], [1650, 2477], [551, 321], [120, 1544], [2900, 2800]];
 		for(var i = 0; i < 6; i++){
-			egg = game.add.sprite(game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), eggArray[i], '');
+			var pos = eggPos[i];
+			egg = game.add.sprite(pos[0], pos[1], eggArray[i], '');
 			game.physics.p2.enable(egg);
 			egg.alive = true;
 			
@@ -575,7 +629,7 @@ Play.prototype = {
 	pingAlpha: function(player, ping, obj){
 		var distance = this.distanceFrom(player, obj);
 		//console.log(1/(distance*0.005));
-		ping.alpha = 1/(distance*0.002);
+		ping.alpha = 200/(distance); // *0.002
 		if(ping.alpha > 0.99){
 			ping.alpha = 1;
 		}
@@ -771,7 +825,5 @@ Play.prototype = {
 		return arr;
 	},
 	render: function(){
-		//game.debug.spriteInfo(player, 32, 32);
-		//game.debug.cameraInfo(game.camera, 32, 32);
 	}
 };

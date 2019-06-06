@@ -10,6 +10,7 @@ var Shrimp = function(game, x, y, key, frame) {
 	game.physics.p2.enable(this);
 	this.body.damping = damping;
 	this.body.angularDamping = damping;
+	this.body.setCircle(7.5);
 };
 
 // inherit prototype from Phaser.Sprite and set constructor to Shrimp

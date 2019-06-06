@@ -23,10 +23,14 @@ Load.prototype = {
 		game.load.image('SpacebarKey', 'SpacebarKey.png');
 		game.load.image('WASDKeys', 'WASDKeys.png');
 		game.load.image('ping', 'ping2.png');
+		game.load.image('BottomWall', 'BottomWall.png');
+		game.load.image('TopWall', 'TopWall.png');
+		game.load.image('LeftWall', 'LeftWall.png');
+		game.load.image('RightWall', 'RightWall.png');
 		game.load.spritesheet('enemy', 'EnemySwim.png', 84, 181, 6);
 		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
-		game.load.spritesheet('player', 'fishPlayer-39x22.png', 30, 45, 4);
-		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18.5, 19, 2);
+		game.load.spritesheet('player', 'fishPlayer-39x22.png', 24, 44.5, 4);
+		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18, 19, 2);
 
 		// load audio assets
 		game.load.path = 'assets/audio/';
@@ -42,8 +46,8 @@ Load.prototype = {
 
 		// load json assets
 		game.load.path = 'assets/json/';
-		game.load.physics("physics", "Enemy.json");
-		game.load.physics("physics", "Fish.json");
+		game.load.physics("physicsEnemy", "Enemy.json");
+		game.load.physics("physicsFish", "Fish.json");
 	},
 	create: function() {
 		console.log('Load: create');

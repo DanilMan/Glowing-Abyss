@@ -6,17 +6,18 @@
 // create Player constructor
 var Player = function(game, speed, key, frame) {
 	// new Sprite(game, x, y, key, frame)
-	Phaser.Sprite.call(this, game, game.world.width/2, game.world.height/2, key, frame);
+	Phaser.Sprite.call(this, game, game.world.width/2, 20, key, frame);
 	game.physics.p2.enable(this);
 	this.animations.add('swimming', [0, 1, 2, 3]);
-	//this.body.clearShapes();
-	//this.body.loadPolygon("physics", "Fish");
+	this.body.clearShapes();
+	this.body.loadPolygon("physicsFish", "fishPlayer-39x22");
 	this.body.damping = damping;
 	this.speed = speed;
 	this.fx = game.add.audio('move');
 	this.fx2 = game.add.audio('move2');
 	this.fxTimer = 0;
 	this.fxCheck = 1;
+	this.body.angle += 180;
 };
 
 // inherit prototype from Phaser.Sprite and set constructor to Player
