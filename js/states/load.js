@@ -28,7 +28,8 @@ Load.prototype = {
 		game.load.image('TopWall', 'TopWall.png');
 		game.load.image('LeftWall', 'LeftWall.png');
 		game.load.image('RightWall', 'RightWall.png');
-		game.load.spritesheet('enemy', 'EnemySwim.png', 84, 181, 6);
+		game.load.image('End', 'End.png');
+		game.load.spritesheet('enemy', 'EnemySpriteSheet.png', 84, 181, 22);
 		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
 		game.load.spritesheet('player', 'fishPlayer-39x22.png', 24, 44.5, 4);
 		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18, 19, 2);

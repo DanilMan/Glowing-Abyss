@@ -58,9 +58,14 @@ Play.prototype = {
 		spit.kill();
 		spit.alive = false;
 
+		// setup end hitbox
+		end = game.add.sprite(1600, 10, 'End', 0);
+		end.anchor.set(0.5);
+
 		// Player(game, speed, key, frame)
 		player = new Player(game, speed, 'player', 0);
 		game.add.existing(player);
+		player.collected = false;
 		player.firstChase = true;
 		player.firstCollected = false;
 		player.secondCollected = false;
@@ -224,7 +229,12 @@ Play.prototype = {
 		aura.position.set(player.x, player.y);
 
 		// reset position of pings to player
-		pings.position.set(player.x, player.y); 
+		pings.position.set(player.x, player.y);
+
+		// check player's overlap with end
+		if(player.collected && this.checkOverlap(player, end)){
+			game.state.start('GameOver'); // ADD NEW GAME OVER SCREEN WHEN ON GIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
 
 		// checks to see if it is time to shrink aura
 		/*if(game.time.now > auraTimer && aura.scale.x > 1.25){ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -255,24 +265,20 @@ Play.prototype = {
 		}
 		if(game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)){
 			// ping logic
-			this.pingLogic(eggs, enemy, player, pings, aura, true);
+			this.pingLogic(eggs, enemy, player, pings, aura, end, true);
 
 			// shrink aura
-			if(this.Shift.alive == false){
-				aura.scale.x -= .005;
-				aura.scale.y -= .005;
-			}
+			aura.scale.x -= .005;
+			aura.scale.y -= .005;
 			
 		}
 		else if(pings.alpha > 0.0){
 			// keep ping logic running
-			this.pingLogic(eggs, enemy, player, pings, aura, false);
+			this.pingLogic(eggs, enemy, player, pings, aura, end, false);
 
 			// keeps shrinking aura
-			if(this.Shift.alive == false){
-				aura.scale.x -= .005;
-				aura.scale.y -= .005;
-			}
+			aura.scale.x -= .005;
+			aura.scale.y -= .005;
 
 			// decrease ping alpha
 			pings.alpha -= 0.02;
@@ -419,6 +425,7 @@ Play.prototype = {
 		enemies = new Enemy(game, x, y, 'enemy', 0);
 		game.add.existing(enemies);
 		enemies.alive = true;
+		enemies.bool = true;
 
 		// add enemies to enemy group
 		enemy.add(enemies);
@@ -485,15 +492,19 @@ Play.prototype = {
 	addPings: function() {
 		var pings = game.add.group();
 		var ping;
-		for(var i = 0; i < 22; i++){
+		for(var i = 0; i < 14; i++){
 			// create ping sprite
 			ping = game.add.sprite(0, 0, 'ping', '');
+			if(i < 13){
+				ping.scale.set(1.2);
+			}
+			else{
+				ping.scale.set(1.5);
+			}
 			ping.rotation = 90;
 			ping.anchor.set(5, 0.5);
-			ping.scale.set(1.2);
 			pings.add(ping);
 		}
-		ping.visible = false; // Makes last ping invisible for the exit later!
 		return pings;
 	},
 	// adds egg collectables to camera hud
@@ -588,24 +599,30 @@ Play.prototype = {
 		var collect = collected.getAt(index);
 		collect.alpha = 1;
 		collectBar.alpha = 0.5;
-		if(player.sprite.firstCollected){
+		if(eggs.countDead() == 2){
 			player.sprite.secondCollected = true;
 		}
 		player.sprite.firstCollected = true;
+		this.checkCollected();
+	},
+	checkCollected: function(){
+		if(eggs.countDead() == 6){
+			player.collected = true;
+		}
+		console.log(eggs.countDead());
 	},
 	resetSpeed: function(){
 		// reset speed
 		enemySpeed = 160;
 	},
 	// enemy movement logic
-	pingLogic: function(eggs, enemies, player, pings, aura, bool){
+	pingLogic: function(eggs, enemies, player, pings, aura, end, bool){
 		var length = 210; // 1200
 		// create ping sprite
 		for(var i = 0; i < 6; i++){
-			// get both sprites in group
+			// get sprites in group
 			var egg = eggs.getAt(i);
 			var ping = pings.getAt(i);
-
 			// checks if egg is alive so it'll ping
 			if(egg.alive){
 				if(bool){
@@ -629,8 +646,8 @@ Play.prototype = {
 				ping.visible = false;
 			}
 		}
-		for(var i = 6; i < 21; i++){
-			// get both sprites in group
+		for(var i = 6; i < 13; i++){
+			// get sprites in group
 			var enemy = enemies.getAt(i-6);
 			var ping = pings.getAt(i);
 
@@ -658,6 +675,30 @@ Play.prototype = {
 				ping.visible = false;
 			}
 		}
+		var ping = pings.getAt(13);
+		if(player.collected){
+			// get both sprites
+			ping.visible = true;
+			if(bool){
+				// change ping alpha
+				this.pingAlpha(player, ping, end);
+			}
+
+			// check if aura is too small
+			if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
+				// resizes ping to aura
+				ping.anchor.x = (aura.width/length + 1/(aura.width/length + 1000)) + 1;
+			}
+
+			// calculate angle of player to end
+			var angle = Phaser.Math.angleBetween(player.x, player.y, end.x, end.y);
+
+			// correct angle of end
+			ping.angle = Phaser.Math.radToDeg(angle) + 180;
+		}
+		else{
+			ping.visible = false;
+		}
 	},
 	pingAlpha: function(player, ping, obj){
 		var distance = this.distanceFrom(player, obj);
@@ -682,20 +723,22 @@ Play.prototype = {
 		}
 	},
 	enemyMovement: function(enemy, player, spit, enemySpeed){
-		// move when more animations are implemented
-		enemy.animations.play('swim', 12, true);
-
 		var enemyR = this.rotation(enemy.x, enemy.y, enemy.x , enemy.y - 90, enemy.angle);
 		if(spit.alive && this.checkDistance(enemyR, spit)){
 			// makes sure that if enemy is already on spit that it stops
 			if(!this.checkOverlap(enemy, spit)){
+				enemy.animations.play('swim', 12, true);
 				this.accelerateToObject(enemy, spit, enemySpeed);
+			}
+			else{
+				enemy.animations.play('stop', 0, false);
 			}
 		}
 		// enemy chases after player
 		else if(this.checkDistance(enemyR, player)){
 			this.accelerateToObject(enemy, player, enemySpeed);
 
+			// add spacebar tutorial
 			if(player.firstChase){
 				this.SpaceBar.x = player.x
 				this.SpaceBar.y = player.y
@@ -706,10 +749,21 @@ Play.prototype = {
 				this.SpaceBar.alive = true;
 				player.firstChase = false;
 			}
-			
+
+			if(this.distanceFrom(enemy, player) < (aura.width/40) - 30){
+				if(enemy.bool || enemy.animations.isFinished){
+					enemy.animations.play('open', 12, false);
+					enemy.bool = false;
+				}
+				else{
+					enemy.animations.play('openSwim', 12, false);
+				}
+				
+			}
 		}
 		// possible random movement for enemy
 		else{
+			enemy.animations.play('swim', 12, true);
 			if(game.time.now > enemyTimer){
 				forward = (forward + 1) % 360;
 				enemyTimer = game.time.now + 20;

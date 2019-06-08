@@ -9,6 +9,7 @@
 
 // define globals
 var game;
+var end;
 var player;
 var spit;
 var shrimp;
