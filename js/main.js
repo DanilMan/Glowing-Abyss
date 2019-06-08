@@ -30,7 +30,13 @@ var enemyTimer;
 var pingTimer;
 var timer;
 var forward;
-var boolPing;
+var playerCollisionGroup;
+var shrimpCollisionGroup;
+var shrimpArrayCollisionGroup;
+var enemyCollisionGroup;
+var rocksCollisionGroup;
+var edgeCollisionGroup;
+var eggsCollisionGroup;
 
 // wait for browser to load before creating Phaser game
 window.onload = function() {

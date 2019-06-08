@@ -25,7 +25,6 @@ Play.prototype = {
 		this.fxChase = game.add.audio('chase');
 		this.fxCollect = game.add.audio('collect');
 		this.fxdie = game.add.audio('die');
-		boolPing = true;
 
 		// load background colorfirst
 		//game.stage.backgroundColor = '#072656';
@@ -41,13 +40,13 @@ Play.prototype = {
 		game.physics.p2.setImpactEvents(true);
 
 		// collision groups from https://phaser.io/examples/v2/p2-physics/collision-groups
-		var playerCollisionGroup = game.physics.p2.createCollisionGroup();
-		var shrimpCollisionGroup = game.physics.p2.createCollisionGroup();
-		var shrimpArrayCollisionGroup = game.physics.p2.createCollisionGroup();
-		var enemyCollisionGroup = game.physics.p2.createCollisionGroup();
-		var rocksCollisionGroup = game.physics.p2.createCollisionGroup();
-		var edgeCollisionGroup = game.physics.p2.createCollisionGroup();
-		var eggsCollisionGroup = game.physics.p2.createCollisionGroup();
+		playerCollisionGroup = game.physics.p2.createCollisionGroup();
+		shrimpCollisionGroup = game.physics.p2.createCollisionGroup();
+		shrimpArrayCollisionGroup = game.physics.p2.createCollisionGroup();
+		enemyCollisionGroup = game.physics.p2.createCollisionGroup();
+		rocksCollisionGroup = game.physics.p2.createCollisionGroup();
+		edgeCollisionGroup = game.physics.p2.createCollisionGroup();
+		eggsCollisionGroup = game.physics.p2.createCollisionGroup();
 
 		// update collision with bounds
 		game.physics.p2.updateBoundsCollisionGroup();
@@ -62,6 +61,11 @@ Play.prototype = {
 		// Player(game, speed, key, frame)
 		player = new Player(game, speed, 'player', 0);
 		game.add.existing(player);
+		player.firstChase = true;
+		player.firstCollected = false;
+		player.secondCollected = false;
+		player.bool1 = true;
+		player.bool2 = true;
 
 		// set player collision group
 		player.body.setCollisionGroup(playerCollisionGroup);
@@ -73,7 +77,7 @@ Play.prototype = {
 		shrimpGrid = this.addShrimpGrid(playerCollisionGroup, shrimpArrayCollisionGroup, shrimpCollisionGroup, edgeCollisionGroup);
 
 		// setup enemy group
-		enemy = this.addEnemy(playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+		enemy = game.add.group();
 
 		// setup rocks
 		// top left entrance
@@ -176,33 +180,26 @@ Play.prototype = {
 		this.WAD.alive = true;
 		this.WADbool = false;
 
-		// create shift sprite
-		this.Shift = game.add.sprite(player.x, player.y, 'ShiftKey');
-		this.Shift.fixedToCamera = true;
-		this.Shift.cameraOffset.setTo(game.camera.width/2 - 140, game.camera.height/2 + 100);
-		this.Shift.anchor.set(0.5);
-		this.Shift.scale.set(2);
-		this.Shift.alive = true;
+		// Ping set
+		this.Shift = game.add.sprite(-100, 0, 'ShiftKey');
+		this.Shift.alive = false;
 		this.Shiftbool = false;
 
 		// create shift sprite
-		this.SpaceBar = game.add.sprite(player.x, player.y, 'SpacebarKey');
-		this.SpaceBar.fixedToCamera = true;
-		this.SpaceBar.cameraOffset.setTo(game.camera.width/2 + 180, game.camera.height/2 + 100);
-		this.SpaceBar.anchor.set(0.5);
-		this.SpaceBar.scale.set(2);
-		this.SpaceBar.alive = true;
+		this.SpaceBar = game.add.sprite(-100, 0, 'SpacebarKey');
+		this.SpaceBar.alive = false;
 		this.SpaceBarbool = false;
 
 		// collected group
 		collected = this.addCollected();
+		
 
 		// start timer
 		timer.start();
 	},
 	update: function() {
 		// create key tutorial and delete them on input
-		if((this.WAD.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.W))) || this.WADbool){
+		if((this.WAD.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S))) || this.WADbool){
 			this.WADbool = this.eraseTutorial(this.WAD, this.WADbool);
 		}
 		if((this.Shift.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.SHIFT))) || this.Shiftbool){
@@ -212,6 +209,17 @@ Play.prototype = {
 			this.SpaceBarbool = this.eraseTutorial(this.SpaceBar, this.SpaceBarbool);
 		}
 
+		if(!this.WAD.alive){
+			// create shift sprite
+			this.Shift.x = player.x
+			this.Shift.y = player.y
+			this.Shift.fixedToCamera = true;
+			this.Shift.cameraOffset.setTo(game.camera.width/2, game.camera.height/2 + 100);
+			this.Shift.anchor.set(0.5);
+			this.Shift.scale.set(2);
+			this.Shift.alive = true;
+		}
+		
 		// reset position of aura to player
 		aura.position.set(player.x, player.y);
 
@@ -294,17 +302,40 @@ Play.prototype = {
 			spit.kill();
 			spit.alive = false;
 		}
+		// spawn enemies
+		if(player.bool1 && player.firstCollected){
+			// top right
+			this.addEnemy(2657, 436, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// top left
+			this.addEnemy(960, 727, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// mid left
+			this.addEnemy(960, 1890, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// mid right
+			this.addEnemy(2977, 1600, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			player.bool1 = false;
+		}
+		if(player.bool2 && player.secondCollected){
+			// mid mid
+			this.addEnemy(1455, 1309, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// bottom left
+			this.addEnemy(291, 2473, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// bottom right
+			this.addEnemy(2357, 2182, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			// bottom right
+			//this.addEnemy(1400, 2477, playerCollisionGroup, enemyCollisionGroup, rocksCollisionGroup, edgeCollisionGroup);
+			player.bool2 = false;
+		}
 	},
-	eraseTutorial: function(item, bool){
+	eraseTutorial: function(item, boolT){
 		if(item.alpha > 0){
-			bool = true;
+			boolT = true;
 			item.alpha -= 0.02;
 		}
 		else{
-			bool = false;
+			boolT = false;
 			item.destroy();
 		}
-		return bool;
+		return boolT;
 	},
 	fade: function(){
 		// fades camera to black when character diesdw
@@ -382,24 +413,21 @@ Play.prototype = {
 		// return shrimp group
 		return shrimps;
 	},
-	addEnemy: function(playerGroup, EnemyGroup, rocksGroup, edgeGroup) {
+	addEnemy: function(x, y, playerGroup, EnemyGroup, rocksGroup, edgeGroup) {
 		// populate enemies
-		var enemy = game.add.group();
 		var enemies;
-		for(var i = 0; i < 15; i++){ // CHANGE TO SPAWN ENEMIES AT EXACT LOCATIONS
-			enemies = new Enemy(game, game.rnd.between(9, game.world.width-9), game.rnd.between(9, game.world.height-9), 'enemy', 0);
-			game.add.existing(enemies);
+		enemies = new Enemy(game, x, y, 'enemy', 0);
+		game.add.existing(enemies);
+		enemies.alive = true;
 
-			// add enemies to enemy group
-			enemy.add(enemies);
+		// add enemies to enemy group
+		enemy.add(enemies);
 
-			// enemies uses enemyCollisionGroup
-			enemies.body.setCollisionGroup(EnemyGroup);
+		// enemies uses enemyCollisionGroup
+		enemies.body.setCollisionGroup(EnemyGroup);
 
-			// enemies collide against themselves and player
-			enemies.body.collides([playerGroup, EnemyGroup, rocksGroup, edgeGroup]);
-		}
-		return enemy;
+		// enemies collide against themselves and player
+		enemies.body.collides([playerGroup, EnemyGroup, rocksGroup, edgeGroup]);
 	},
 	addRocks: function(x, y, playerGroup, EnemyGroup, rocksGroup) {
 		// populate rocks
@@ -560,6 +588,10 @@ Play.prototype = {
 		var collect = collected.getAt(index);
 		collect.alpha = 1;
 		collectBar.alpha = 0.5;
+		if(player.sprite.firstCollected){
+			player.sprite.secondCollected = true;
+		}
+		player.sprite.firstCollected = true;
 	},
 	resetSpeed: function(){
 		// reset speed
@@ -604,6 +636,7 @@ Play.prototype = {
 
 			// checks if enemy is alive so it'll ping
 			if(enemy.alive){
+				ping.visible = true;
 				if(bool){
 					// change ping alpha
 					this.pingAlpha(player, ping, enemy);
@@ -628,8 +661,7 @@ Play.prototype = {
 	},
 	pingAlpha: function(player, ping, obj){
 		var distance = this.distanceFrom(player, obj);
-		//console.log(1/(distance*0.005));
-		ping.alpha = 200/(distance); // *0.002
+		ping.alpha = 400/(distance);
 		if(ping.alpha > 0.99){
 			ping.alpha = 1;
 		}
@@ -663,6 +695,18 @@ Play.prototype = {
 		// enemy chases after player
 		else if(this.checkDistance(enemyR, player)){
 			this.accelerateToObject(enemy, player, enemySpeed);
+
+			if(player.firstChase){
+				this.SpaceBar.x = player.x
+				this.SpaceBar.y = player.y
+				this.SpaceBar.fixedToCamera = true;
+				this.SpaceBar.cameraOffset.setTo(game.camera.width/2, game.camera.height/2 + 100);
+				this.SpaceBar.anchor.set(0.5);
+				this.SpaceBar.scale.set(2);
+				this.SpaceBar.alive = true;
+				player.firstChase = false;
+			}
+			
 		}
 		// possible random movement for enemy
 		else{

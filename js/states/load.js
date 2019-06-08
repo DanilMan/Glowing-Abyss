@@ -9,6 +9,7 @@ Load.prototype = {
 
 		// load graphics assets
 		game.load.path = 'assets/img/';
+		game.load.image('TitleScreen', 'GlowingAbyssTitleScreen.png');
 		game.load.image('background', 'WaterBackground.png');
 		game.load.image('collectBar', 'collectionBar.png');
 		game.load.image('aura', 'Aura-3.png');
