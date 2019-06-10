@@ -5,24 +5,37 @@
 
 var GameOver = function(game) {};
 GameOver.prototype = {
+	init: function(end, fxTheme){
+		this.end = end;
+		this.fxTheme = fxTheme;
+	},
 	create: function() {
 		// set camera back to normal
+		console.log('GameOver: create');
 		game.camera.scale.set(1);
+
+		this.fxexit = game.add.audio('gameEnd');
 
 		// change background color
 		game.stage.backgroundColor = '000';
 
 		// game over text
-		var titleText = game.add.text(game.width/2, game.height/2, 'Game Over', {font: 'Helvetica', fontSize: '48px', fill: '#fff'});
-		titleText.anchor.set(0.5);
-
-		var playText = game.add.text(game.width/2, game.height*.6, 'Press SPACEBAR to Restart', {font: 'Helvetica', fontSize: '24px', fill: '#fff'});
-		playText.anchor.set(0.5);
+		if(this.end == 0){
+			this.fxTheme.pause();
+			this.gameover = game.add.sprite(0, 0, 'GameOverScreen');
+		}
+		else{
+			game.add.audio('gameStart');
+			this.fxTheme.pause();
+			this.fxexit.play();
+			this.gameover = game.add.sprite(0, 0, 'WinScreen');
+		}
 	},
 	update: function() {
 		// wait for keyboard input
 		if(game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) {
-			game.state.start('Play');
+			this.fxTheme.resume();
+			game.state.start('Play', true, false, this.fxTheme);
 		}
 	}
 };

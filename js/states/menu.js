@@ -11,12 +11,15 @@ Menu.prototype = {
 		// change background color
 		game.stage.backgroundColor = '000';
 
+		this.fxTheme = game.add.audio('gameTheme');
+
+		this.fxTheme.play('', 0, 1, true);
 		game.add.sprite(0, 0, 'TitleScreen');
 	},
 	update: function() {
 		// check for UP input
 		if(game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) {
-			game.state.start('Play');
+			game.state.start('Story', true, false, this.fxTheme);
 		}
 	}
 };
