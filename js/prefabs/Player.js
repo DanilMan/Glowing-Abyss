@@ -17,6 +17,8 @@ var Player = function(game, speed, key, frame) {
 	this.fx2 = game.add.audio('move2');
 	this.fxTimer = 0;
 	this.fxCheck = 1;
+	this.boolcounter = 0;
+	this.shrimpCounter = 0;
 	this.body.angle += 180;
 };
 
@@ -51,16 +53,16 @@ Player.prototype.update = function() {
 		this.scale.x *= -1;
 	}
 
-	// P2 logic for angular movement
 	if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
-		this.body.rotateLeft(75);
+		this.body.rotateRight(75);
 	}
 	else if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
-		this.body.rotateRight(75);
+		this.body.rotateLeft(75);
 	}
 	else{
 		this.body.setZeroRotation();
 	}
+
 	if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
 		this.body.thrust(this.speed);
 		this.animations.play('swimming', 5, true);
@@ -94,4 +96,107 @@ Player.prototype.update = function() {
 	else{
 		this.animations.stop('swimming');
 	}
+
+	/*var angle = (this.angle + 450) % 360;
+	// P2 logic for angular movement
+	if(((angle > 0 && angle < 180) && !((game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D)) && !this.bool0))){ // weird issued with code bouncing back
+		this.bool0 = true;
+		if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
+			this.body.rotateLeft(75);
+		}
+		else if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
+			this.body.rotateRight(75);
+		}
+		else{
+			this.body.setZeroRotation();
+		}
+	}
+	else if(((angle > 180 && angle < 360) && !((game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D)) && this.bool0))){
+		this.bool0 = false;
+		if(game.input.keyboard.isDown(Phaser.Keyboard.A)){
+			this.body.rotateRight(75);
+		}
+		else if(game.input.keyboard.isDown(Phaser.Keyboard.D)){
+			this.body.rotateLeft(75);
+		}
+		else{
+			this.body.setZeroRotation();
+		}
+	}*/
+		
+	
+	/*if((angle > 0 && angle < 180) && !((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S)) && !this.bool1) || ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S)) && this.bool1)){
+		this.bool1 = true;
+		if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
+			this.body.thrust(this.speed);
+			this.animations.play('swimming', 5, true);
+			if(game.time.now > this.fxTimer){
+				if(this.fxCheck%2==0) {
+					this.fx.play();
+					this.fxcheck = this.fxcheck/2;
+				}
+				else{
+					this.fx2.play();
+				}
+				this.fxCheck++;
+				this.fxTimer = game.time.now + 400;
+			}
+		}
+		else if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+			this.body.reverse(this.speed/2);
+			this.animations.play('swimming', 5, true);
+			if(game.time.now > this.fxTimer){
+				if(this.fxCheck%2==0) {
+					this.fx.play();
+					this.fxcheck = this.fxcheck/2;
+				}
+				else{
+					this.fx2.play();
+				}
+				this.fxCheck++;
+				this.fxTimer = game.time.now + 400;
+			}
+		}
+		else{
+			this.animations.stop('swimming');
+		}
+	}
+	else if((angle > 180 && angle < 360) && !((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S)) && this.bool1) || ((game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S)) && !this.bool1)){
+		this.bool1 = false;
+		if(game.input.keyboard.isDown(Phaser.Keyboard.W)){
+			this.body.reverse(this.speed/2);
+			this.animations.play('swimming', 5, true);
+			if(game.time.now > this.fxTimer){
+				if(this.fxCheck%2==0) {
+					this.fx.play();
+					this.fxcheck = this.fxcheck/2;
+				}
+				else{
+					this.fx2.play();
+				}
+				this.fxCheck++;
+				this.fxTimer = game.time.now + 400;
+			}
+		}
+		else if(game.input.keyboard.isDown(Phaser.Keyboard.S)){
+			this.body.thrust(this.speed);
+			this.animations.play('swimming', 5, true);
+			if(game.time.now > this.fxTimer){
+				if(this.fxCheck%2==0) {
+					this.fx.play();
+					this.fxcheck = this.fxcheck/2;
+				}
+				else{
+					this.fx2.play();
+				}
+				this.fxCheck++;
+				this.fxTimer = game.time.now + 400;
+			}
+		}
+		else{
+			this.animations.stop('swimming');
+		}
+	}
+	else{
+	}*/
 }

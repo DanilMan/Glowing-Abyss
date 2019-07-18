@@ -22,8 +22,6 @@ var collected;
 var aura;
 var eggs;
 var pings;
-var enemySpeed;
-var speed;
 var damping;
 var auraTimer;
 var spitTimer;

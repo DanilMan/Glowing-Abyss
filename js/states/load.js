@@ -17,6 +17,7 @@ Load.prototype = {
 		game.load.image('Continue', 'Continue.png');
 		game.load.image('background', 'WaterBackground.png');
 		game.load.image('collectBar', 'collectionBar.png');
+		game.load.image('hitbox', 'hitbox.png');
 		game.load.image('aura', 'Aura-3.png');
 		game.load.image('rock', 'SquareRock1.png');
 		game.load.image('eggBlue', 'eggBlue.png');
@@ -34,11 +35,12 @@ Load.prototype = {
 		game.load.image('LeftWall', 'LeftWall.png');
 		game.load.image('RightWall', 'RightWall.png');
 		game.load.image('End', 'End.png');
+		game.load.spritesheet('pingEnd', 'ping.png', 25, 26, 9);
 		game.load.spritesheet('ComicAnimated', 'ComicAnimated.png', 800, 800, 8);
 		game.load.spritesheet('enemy', 'EnemySpriteSheet.png', 84, 181, 22);
 		game.load.spritesheet('spit', 'spit.png', 24, 48, 28);
 		game.load.spritesheet('player', 'fishPlayer-39x22.png', 24, 44.5, 4);
-		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18, 19, 2);
+		game.load.spritesheet('shrimp', 'shrimp1-18x17.png', 18.5, 19, 2);
 
 		// load audio assets
 		game.load.path = 'assets/audio/';

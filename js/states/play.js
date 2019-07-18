@@ -5,14 +5,9 @@
 
 var Play = function(game) {};
 Play.prototype = {
-	init: function(fxTheme){
-		this.fxTheme = fxTheme;
-	},
 	create: function() {
 		console.log('Play: create');
-		speed = 150;
 		damping = 0.8;
-		enemySpeed = 160;
 		aura = 10
 		forward = 0;
 		auraTimer = 0;
@@ -24,11 +19,16 @@ Play.prototype = {
 		timer = game.time.create(false);
 		this.fxEat = game.add.audio('eat');
 		this.fxPing = game.add.audio('ping');
+		this.fxDash = game.add.audio('dash');
 		this.fxBump = game.add.audio('bump');
 		this.fxChase = game.add.audio('chase');
 		this.fxCollect = game.add.audio('collect');
 		this.fxdie = game.add.audio('die');
 		this.fxenter = game.add.audio('gameStart');
+		this.fxTheme = game.add.audio('gameTheme');
+
+		// play theme
+		this.fxTheme.play('', 0, 1, true);
 
 		// load background colorfirst
 		//game.stage.backgroundColor = '#072656';
@@ -67,7 +67,7 @@ Play.prototype = {
 		end.anchor.set(0.5);
 
 		// Player(game, speed, key, frame)
-		player = new Player(game, speed, 'player', 0);
+		player = new Player(game, 150, 'player', 0);
 		game.add.existing(player);
 		player.end = false;
 		player.collected = false;
@@ -214,6 +214,11 @@ Play.prototype = {
 			game.state.start('GameOver', true, false, 0, this.fxTheme);
 		}
 
+		if(player.boolcounter > 8 || player.endbool){
+			this.fxdie.play();
+			game.state.start('GameOver', true, false, 0, this.fxTheme);
+		}
+
 		// create key tutorial and delete them on input
 		if((this.WAD.alive == true && (game.input.keyboard.isDown(Phaser.Keyboard.A) || game.input.keyboard.isDown(Phaser.Keyboard.D) || game.input.keyboard.isDown(Phaser.Keyboard.W) || game.input.keyboard.isDown(Phaser.Keyboard.S))) || this.WADbool){
 			this.WADbool = this.eraseTutorial(this.WAD, this.WADbool);
@@ -244,7 +249,7 @@ Play.prototype = {
 
 		// check player's overlap with end
 		if(player.collected && this.checkOverlap(player, end)){
-			game.state.start('GameOver', true, false, 1, this.fxTheme); // ADD NEW GAME OVER SCREEN WHEN ON GIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			game.state.start('GameOver', true, false, 1, this.fxTheme);
 		}
 
 		// checks to see if it is time to shrink aura
@@ -296,29 +301,35 @@ Play.prototype = {
 		}
 
 		//check if player is pressing SPACEBAR && cool down is over (SPIT)
-		if((game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) && game.time.now > spitTimer && aura.scale.x > 1.5){
+		if((game.input.keyboard.justPressed(Phaser.Keyboard.SPACEBAR)) && game.time.now > spitTimer && aura.scale.x > 4){ // 1.5 min aura.scale
+			this.fxDash.play();
+			spit.animations.play('floating', 8, false);
 			var rotate = this.rotation(player.x, player.y, player.x , player.y - 18, player.angle + 2);
 			spit.reset(rotate[0], rotate[1]);
 			spit.angle = player.angle;
-			spit.animations.play('floating', 8, false);
 			spit.alive = true;
 
 			// using spit shrinks aura
 			if(this.SpaceBar.alive == false){
-				aura.scale.x -= (aura.width/2000);
-				aura.scale.y -= (aura.height/2000);
+				aura.scale.x -= (aura.width/2500);
+				aura.scale.y -= (aura.height/2500);
 			}
 			
-
 			// spit cooldown
-			spitTimer = game.time.now + 8000;
+			spitTimer = game.time.now + 500;
 		}
 
 		// check if it is time to kill spit
-		if(spit.alive && game.time.now > spitTimer - 4000){
+		if(spit.alive && game.time.now > spitTimer + 3500){
 			spit.kill();
 			spit.alive = false;
 		}
+
+		// resets player's speed
+		if(game.time.now > player.timer){
+			player.speed = 150;
+		}
+
 		// spawn enemies
 		if(player.bool1 && player.firstCollected){
 			// top right
@@ -435,6 +446,8 @@ Play.prototype = {
 		var enemies;
 		enemies = new Enemy(game, x, y, 'enemy', 0);
 		game.add.existing(enemies);
+		enemies.hitBox = game.add.sprite(x, y, 'hitbox', 0);
+		enemies.hitBox.anchor.set(0.5);
 		enemies.alive = true;
 		enemies.bool = true;
 		enemies.speed = 160;
@@ -506,12 +519,13 @@ Play.prototype = {
 		var ping;
 		for(var i = 0; i < 14; i++){
 			// create ping sprite
-			ping = game.add.sprite(0, 0, 'ping', '');
 			if(i < 13){
+				ping = game.add.sprite(0, 0, 'ping', '');
 				ping.scale.set(1.2);
 			}
 			else{
-				ping.scale.set(1.5);
+				ping = game.add.sprite(0, 0, 'pingEnd', 0);
+				ping.animations.add('Ending', [0, 1, 2, 3, 4, 5, 6, 7, 8]);
 			}
 			ping.rotation = 90;
 			ping.anchor.set(5, 0.5);
@@ -536,7 +550,7 @@ Play.prototype = {
 	},
 	collectShrimp: function(player, shrimp){
 		
-		if(aura.scale.x < 12 && shrimp.sprite.alive){
+		if(shrimp.sprite.alive){
 			// play shrimp collection sound
 			this.fxEat.play();
 
@@ -548,12 +562,20 @@ Play.prototype = {
 			shrimp.sprite.alive = false;
 
 			// increases scale of aura
-			aura.scale.x += 1;
-			aura.scale.y += 1;
+			if(aura.scale.x < 12){
+				aura.scale.x += 1;
+				aura.scale.y += 1;
+			}
+
+			// increase player speed
+			player.sprite.speed = 1000;
+			player.sprite.timer = game.time.now + 100;
+
+			player.sprite.shrimpCounter++;
 		}
 	},
 	collectShrimpGrid: function(player, shrimp){
-		if(aura.scale.x < 12 && shrimp.sprite.alive){
+		if(shrimp.sprite.alive){
 			// turn off collision
 			shrimp.sprite.body.enable = false;
 
@@ -564,8 +586,16 @@ Play.prototype = {
 			this.shrimpGridFix(player, shrimp);
 			
 			// increases scale of aura
-			aura.scale.x += 1;
-			aura.scale.y += 1;
+			if(aura.scale.x < 12){
+				aura.scale.x += 1;
+				aura.scale.y += 1;
+			}
+
+			// increase player speed
+			player.sprite.speed = 1000;
+			player.sprite.timer = game.time.now + 100;
+
+			player.sprite.shrimpCounter++;
 		}
 	},
 	shrimpGridFix: function(player, shrimp){
@@ -592,15 +622,9 @@ Play.prototype = {
 	collisionEnemy: function(player, enemy){
 		// shrink arua when enemy strikes
 		if(aura.scale.x > 1.5){
-			aura.scale.x -= 0.5;
-			aura.scale.y -= 0.5;
+			//aura.scale.x -= 0.5;
+			//aura.scale.y -= 0.5;
 		}
-
-		// set timer directions
-		timer.add(500, this.resetSpeed, this);
-
-		// slow down enemy for half a second
-		enemySpeed = -10;
 	},
 	collectEgg: function(player, egg){
 		//collectBar.alpha = 1;
@@ -621,10 +645,6 @@ Play.prototype = {
 		if(eggs.countDead() == 6){
 			player.collected = true;
 		}
-	},
-	resetSpeed: function(){
-		// reset speed
-		enemySpeed = 160;
 	},
 	// enemy movement logic
 	pingLogic: function(eggs, enemies, player, pings, aura, end, bool){
@@ -686,9 +706,10 @@ Play.prototype = {
 				ping.visible = false;
 			}
 		}
-		length = 250;
+		length = 1200;
 		var ping = pings.getAt(13);
 		if(player.collected){
+			ping.animations.play('Ending', 6, true);
 			// get both sprites
 			ping.visible = true;
 			if(bool){
@@ -697,9 +718,9 @@ Play.prototype = {
 			}
 
 			// check if aura is too small
-			if((aura.width/length + 1/(aura.width/length + 1000)) + 1 > 2.2){
+			if((aura.width/length + 1/(aura.width/length + 20000)) + 1 > 2.2){
 				// resizes ping to aura
-				ping.anchor.x = (aura.width/length + 1/(aura.width/length + 1000)) + 1;
+				ping.anchor.x = (aura.width/length + 1/(aura.width/length + 20000)) + 1;
 			}
 
 			// calculate angle of player to end
@@ -753,6 +774,11 @@ Play.prototype = {
 		else if(this.checkDistance(enemyR, player)){
 			this.accelerateToObject(enemy, player, enemy.speed);
 
+			var pos = this.rotation(enemy.x, enemy.y, enemy.x, enemy.y - 75, enemy.angle);
+			enemy.hitBox.x = pos[0];
+			enemy.hitBox.y = pos[1];
+			enemy.hitBox.angle = enemy.angle;
+
 			// add spacebar tutorial
 			if(player.firstChase){
 				this.SpaceBar.x = player.x
@@ -764,35 +790,46 @@ Play.prototype = {
 				this.SpaceBar.alive = true;
 				player.firstChase = false;
 			}
+
 			// Chase enemy animation
-			if(this.distanceFromHead(enemyR, player) < 22){//24.5
-				if(enemy.bool2 && game.time.now > enemy.closeTimer){
-					enemy.closeTimer = game.time.now + 100;
-				}
-				if(game.time.now == enemy.closeTimer){
+			if(this.distanceFromHead(enemyR, player) < 18){//24.5
+				var biteAnim = enemy.bite;
+				var bitingAnim = enemy.biting;
+				if(enemy.bool2){
+					enemy.animations.play('bite', 6, false);
+					enemy.slowTimer = game.time.now + (aura.width/3) + 50;
 					enemy.bool2 = false;
 					enemy.bool1 = true;
+					enemy.speed = 80;
 				}
-				if(game.time.now < enemy.closeTimer){
-					enemy.animations.play('bite', 5, false);
+				else if(biteAnim.isPlaying){
+					enemy.bit = true;
 				}
-				else if(enemy.bool3){
-					enemy.slowTimer = game.time.now + 500;
-					enemy.bool3 = false;
+				else if(!biteAnim.isPlaying || !bitingAnim.isPlaying){
+					enemy.slowTimer = game.time.now + (aura.width/3) + 25;
+					enemy.animations.play('biting', 16, false);
+					enemy.bit = false;
+				}
+
+				if(this.checkOverlap(player, enemy.hitBox)){
+					if(enemy.bit){
+						player.boolcounter++;
+					}
+					/*if(bitingAnim.frame == 21){
+						player.endbool = true;
+					}*/
 				}
 			}
 			else if(this.distanceFromHead(enemyR, player) < (aura.width/80)){
-				if(enemy.bool1 && game.time.now > enemy.openTimer){
-					enemy.openTimer = game.time.now + 300;
-				}
-				if(game.time.now == enemy.openTimer){
+				var openAnim = enemy.open;
+				var openSwimAnim = enemy.openSwim;
+				if(enemy.bool1){
+					enemy.animations.play('open', 10, false);
 					enemy.bool1 = false;
 					enemy.bool2 = true;
+					enemy.bit = false;
 				}
-				if(game.time.now < enemy.openTimer){
-					enemy.animations.play('open', 10, false);
-				}
-				else{
+				else if(!openAnim.isPlaying && !openSwimAnim.isPlaying){
 					enemy.animations.play('openSwim', 12, false);
 				}
 			}
@@ -800,10 +837,10 @@ Play.prototype = {
 				enemy.animations.play('swim', 12, true);
 				enemy.bool1 = true;
 				enemy.bool2 = true;
-				enemy.bool3 = true;
+				enemy.bit = false;
 			}
 		}
-		// possible random movement for enemy
+		// random movement for enemy
 		else{
 			if(enemy.speed  != 160){
 				enemy.speed = 160;
@@ -813,19 +850,13 @@ Play.prototype = {
 				forward = (forward + 1) % 360;
 				enemyTimer = game.time.now + 20;
 			}
-			this.enemyRandom(enemy, forward, enemy.speed);
-			enemy.openTimer = 0;
-			enemy.closeTimer = 0;
+			this.enemyPath(enemy, forward, enemy.speed);
 			enemy.slowTimer = 0;
 			enemy.bool1 = true;
 			enemy.bool2 = true;
-			enemy.bool3 = true;
 		}
 
-		if(game.time.now < enemy.slowTimer){
-			enemy.speed = 0;
-		}
-		else{
+		if(game.time.now > enemy.slowTimer){
 			enemy.speed = 160;
 		}
 
@@ -865,7 +896,7 @@ Play.prototype = {
 		obj1.body.force.x = Math.cos(angle) * speed;
 		obj1.body.force.y = Math.sin(angle) * speed;
 	},
-	enemyRandom: function(obj1, obj2, speed){
+	enemyPath: function(obj1, obj2, speed){
 		var angle =  game.math.degToRad(obj2);
 		// correct angle of enemy
 		var angleTo = Phaser.Math.radToDeg(angle);

@@ -5,9 +5,6 @@
 
 var Story = function(game) {};
 Story.prototype = {
-	init: function(fxTheme){
-		this.fxTheme = fxTheme;
-	},
 	create: function() {
 		console.log('Story: create');
 

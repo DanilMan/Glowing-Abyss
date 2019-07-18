@@ -10,10 +10,7 @@ Menu.prototype = {
 
 		// change background color
 		game.stage.backgroundColor = '000';
-
-		this.fxTheme = game.add.audio('gameTheme');
-
-		this.fxTheme.play('', 0, 1, true);
+		
 		game.add.sprite(0, 0, 'TitleScreen');
 	},
 	update: function() {
